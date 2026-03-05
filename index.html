@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KINRUSHV6 Master Command Center</title>
+    <style>
+        :root { --accent: #00ffcc; --emergency: #ff0000; --clutch-y: #ffcc00; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; overflow: hidden; transition: all 1s; }
+        
+        /* PAGE SYSTEM */
+        .page { display: none; height: 100vh; width: 100vw; padding: 60px; box-sizing: border-box; flex-direction: column; justify-content: center; }
+        .active { display: flex; }
+
+        /* THEMES & OVERLAYS */
+        #dimmer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; pointer-events: none; z-index: 1000; opacity: 0; transition: opacity 5s; }
+        .emergency-mode { background: var(--emergency) !important; animation: strobe 0.5s infinite; color: #fff !important; }
+        @keyframes strobe { 0% { background: #f00; } 50% { background: #600; } }
+
+        /* WEATHER HERO (90% EMPHASIS) */
+        #main-temp { font-size: 24rem; font-weight: 900; line-height: 0.7; margin: 0; letter-spacing: -12px; }
+        #weather-sub { font-size: 5rem; color: var(--accent); font-weight: bold; }
+        #clock { font-size: 6rem; position: absolute; top: 40px; right: 60px; font-weight: 300; }
+        
+        /* SPORTS & CARDS */
+        .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .game-card { padding: 30px; border-radius: 20px; background: #111; border: 5px solid #333; font-size: 2.5rem; }
+        .clutch-y { background: var(--clutch-y) !important; color: #000 !important; border-color: #fff; }
+        .clutch-r { background: var(--emergency) !important; color: #fff !important; border-color: #fff; animation: pulse 0.6s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        /* ALERT BAR */
+        #alert-bar { background: #ff4500; color: #fff; padding: 20px; font-size: 2.5rem; position: absolute; bottom: 0; left: 0; width: 100%; text-align: center; display: none; font-weight: bold; z-index: 2000; }
+    </style>
+</head>
+<body onclick="enableAudio()">
+    <div id="dimmer"></div>
+    <div id="clock">00:00</div>
+
+    <!-- WEATHER PAGE (3 MINS) -->
+    <div id="weather-page" class="page active">
+        <div id="main-temp">--°</div>
+        <div id="weather-sub">LOADING KINRUSHV6...</div>
+        <div id="pws-details" style="font-size: 3rem; color: #3399ff; margin-top: 20px;"></div>
+    </div>
+
+    <!-- SPORTS PAGE (30 SECS) -->
+    <div id="sports-page" class="page">
+        <h1 style="color:var(--clutch-y); font-size: 4rem;">Live Scoreboard</h1>
+        <div id="score-grid" class="card-grid"></div>
+    </div>
+
+    <!-- TRASH/CALENDAR (30 SECS) -->
+    <div id="events-page" class="page">
+        <h1 style="color:var(--accent); font-size: 4rem;">Rushville Calendar</h1>
+        <div id="events-list" style="font-size: 3rem;">
+            <div id="trash-reminder">Checking Trash Day...</div>
+            <div style="margin-top:20px;">Mar 14: St. Patty's Parade</div>
+        </div>
+    </div>
+
+    <div id="alert-bar">CRITICAL ALERT DETECTED</div>
+
+    <script>
+        const WU_ID = 'KINRUSHV6';
+        const WU_KEY = 'c81a6f3f2fe543bd9a6f3f2fe583bde7';
+        const RUSH_COUNTY = 'INZ066'; 
+        let audioUnlocked = false;
+
+        function enableAudio() { audioUnlocked = true; }
+
+        // --- 1. WEIGHTED ROTATION ---
+        let pageIdx = 0;
+        const pageIds = ['weather-page', 'sports-page', 'events-page'];
+        function rotate() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const id = pageIds[pageIdx];
+            document.getElementById(id).classList.add('active');
+            const duration = (id === 'weather-page') ? 180000 : 30000;
+            pageIdx = (pageIdx + 1) % pageIds.length;
+            setTimeout(rotate, duration);
+        }
+
+        // --- 2. WEATHER (BACKYARD + NWS ALERTS) ---
+        async function getConditions() {
+            try {
+                const res = await fetch(`https://api.weather.com{WU_ID}&format=json&units=e&apiKey=${WU_KEY}`);
+                const data = await res.json();
+                const o = data.observations[0].imperial;
+                document.getElementById('main-temp').innerText = Math.round(o.temp) + "°";
+                document.getElementById('weather-sub').innerText = `WIND: ${o.windSpeed} MPH (GUST ${o.windGust})`;
+                document.getElementById('pws-details').innerText = o.precipRate > 0 ? `RAINING: ${o.precipRate}"/HR` : "";
+            } catch(e) {}
+        }
+
+        async function getAlerts() {
+            const res = await fetch('https://api.weather.gov');
+            const data = await res.json();
+            const localAlert = data.features.find(f => f.properties.affectedZones.includes(`https://api.weather.gov{RUSH_COUNTY}`));
+            const alertBar = document.getElementById('alert-bar');
+            
+            if (localAlert) {
+                alertBar.innerText = localAlert.properties.event + ": " + localAlert.properties.headline;
+                alertBar.style.display = "block";
+                if (localAlert.properties.event.includes("Tornado Warning")) {
+                    document.body.classList.add('emergency-mode');
+                    document.getElementById('dimmer').style.opacity = 0;
+                }
+            } else {
+                alertBar.style.display = "none";
+                document.body.classList.remove('emergency-mode');
+            }
+        }
+
+        // --- 3. SPORTS CLUTCH ---
+        async function getSports() {
+            const res = await fetch('https://site.api.espn.com');
+            const data = await res.json();
+            let html = "";
+            data.events.slice(0, 4).forEach(e => {
+                const teamA = e.competitions[0].competitors[0];
+                const teamB = e.competitions[0].competitors[1];
+                const diff = Math.abs(teamA.score - teamB.score);
+                const clock = e.status.displayClock;
+                let c = "";
+                if (diff <= 8 && clock <= "1:00") c = "clutch-r";
+                else if (diff <= 8 && clock <= "4:00") c = "clutch-y";
+                html += `<div class="game-card ${c}">${teamA.team.abbreviation} ${teamA.score} - ${teamB.team.abbreviation} ${teamB.score}<br><small>${e.status.type.detail}</small></div>`;
+            });
+            document.getElementById('score-grid').innerHTML = html;
+        }
+
+        // --- 4. TRASH & DIMMING ---
+        function runHouseLogic() {
+            const now = new Date();
+            const hour = now.getHours();
+            const day = now.getDay();
+            // Dimming
+            const dim = document.getElementById('dimmer');
+            if (hour >= 23 || hour < 8) { dim.style.opacity = 0.9; document.body.style.color = "#800"; }
+            else if (hour >= 19) { dim.style.opacity = 0.5; document.body.style.color = "#fff"; }
+            else { dim.style.opacity = 0; document.body.style.color = "#fff"; }
+            // Trash (Wed pickup, alert on Tue)
+            document.getElementById('trash-reminder').innerText = (day === 2) ? "🗑️ TRASH OUT TONIGHT" : "Trash Day: Wednesday";
+        }
+
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }, 1000);
+
+        getConditions(); getAlerts(); getSports(); runHouseLogic(); rotate();
+        setInterval(getConditions, 30000); setInterval(getAlerts, 120000);
+        setInterval(getSports, 60000); setInterval(runHouseLogic, 60000);
+    </script>
+</body>
+</html>
