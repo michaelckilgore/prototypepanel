@@ -1,100 +1,217 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>KINRUSHV6 Master Prototype</title>
-    <style>
-        :root { --accent: #00ffcc; --clutch-y: #ffcc00; }
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
-        .page { display: none; height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .active { display: flex; }
-        
-        /* WEATHER DASHBOARD FIX */
-        iframe { width: 100%; height: 100%; border: none; background: #000; }
-        
-        /* SPORTS LAYOUT */
-        .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; width: 90%; }
-        .game-card { padding: 25px; border-radius: 15px; background: #111; border: 3px solid #333; font-size: 2.2rem; }
-        
-        #clock { position: fixed; top: 20px; right: 20px; font-size: 3rem; background: rgba(0,0,0,0.8); padding: 10px 20px; border-radius: 15px; z-index: 1000; border: 1px solid #333; }
-    </style>
+<meta charset="UTF-8">
+<title>Media Panel Dashboard</title>
+
+<style>
+
+body{
+margin:0;
+background:#000;
+color:white;
+font-family:Arial,Helvetica,sans-serif;
+overflow:hidden;
+}
+
+.screen{
+position:absolute;
+width:100%;
+height:100%;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+opacity:0;
+transition:opacity 1s;
+}
+
+.screen.active{
+opacity:1;
+}
+
+.title{
+position:absolute;
+top:20px;
+font-size:40px;
+font-weight:bold;
+}
+
+.bigtemp{
+font-size:120px;
+font-weight:bold;
+}
+
+.row{
+display:flex;
+gap:60px;
+margin-top:40px;
+font-size:30px;
+}
+
+.ticker{
+position:absolute;
+bottom:0;
+width:100%;
+background:#111;
+padding:10px;
+font-size:22px;
+}
+
+iframe{
+border:none;
+}
+
+</style>
 </head>
+
 <body>
-    <div id="clock">00:00</div>
 
-    <!-- PAGE 0: KINRUSHV6 DASHBOARD (Fixed URL) -->
-    <div id="page-0" class="page active">
-        <!-- Using the 'pwsdash' parameter to force the dashboard view -->
-        <iframe src="https://www.wunderground.com"></iframe>
-    </div>
+<!-- WEATHER SCREEN -->
 
-    <!-- PAGE 1: SPORTS (Double-Proxy Fix) -->
-    <div id="page-1" class="page">
-        <h1 style="color:var(--clutch-y); font-size: 3.5rem;">TONIGHT'S HOOPS</h1>
-        <div id="score-grid" class="card-grid">Syncing ESPN...</div>
-    </div>
+<div class="screen active" id="weather">
 
-    <!-- PAGE 2: VERIFICATION IMAGE -->
-    <div id="page-2" class="page">
-        <img id="test-img" src="https://picsum.photos" style="width:100%; height:100%; object-fit:cover;">
-    </div>
+<div class="title">Rushville Weather</div>
 
-    <!-- PAGE 3: HOUSE MONITOR -->
-    <div id="page-3" class="page">
-        <h1 style="color:var(--accent); font-size: 4rem;">HOUSE MONITOR</h1>
-        <div id="power-status" style="font-size: 3rem; margin-bottom: 20px;">GRID: NORMAL (0 OUTAGES)</div>
-        <div id="trash-reminder" style="font-size: 3rem; color:#aaa;">Trash Day: Wednesday</div>
-    </div>
+<div class="bigtemp" id="temp">--°</div>
 
-    <script>
-        let currentIndex = 0;
-        const totalPages = 4;
+<div class="row">
 
-        // 3-SECOND ROTATION
-        function rotate() {
-            document.getElementById(`page-${currentIndex}`).classList.remove('active');
-            currentIndex = (currentIndex + 1) % totalPages;
-            document.getElementById(`page-${currentIndex}`).classList.add('active');
-            if (currentIndex === 2) {
-                document.getElementById('test-img').src = `https://picsum.photos{Math.random()}`;
-            }
-        }
-        setInterval(rotate, 3000);
+<div>Humidity<br><span id="humidity">--</span>%</div>
 
-        // SPORTS FETCH WITH LG-COMPATIBLE PROXY
-        async function updateSports() {
-            try {
-                // 'allorigins' is more compatible with LG browsers for nested JSON
-                const target = 'https://site.api.espn.com';
-                const res = await fetch(`https://api.allorigins.win{encodeURIComponent(target)}`);
-                const json = await res.json();
-                const data = JSON.parse(json.contents); // Unpack the string contents
-                
-                let html = "";
-                data.events.slice(0, 4).forEach(e => {
-                    const game = e.competitions[0];
-                    const teams = game.competitors;
-                    const away = teams.find(t => t.homeAway === 'away');
-                    const home = teams.find(t => t.homeAway === 'home');
-                    const status = e.status.type.shortDetail;
-                    html += `<div class="game-card">
-                        ${away.team.abbreviation} @ ${home.team.abbreviation}<br>
-                        <span style="color:#aaa; font-size:1.8rem;">${status}</span>
-                    </div>`;
-                });
-                document.getElementById('score-grid').innerHTML = html || "No Games Found";
-            } catch(e) { 
-                document.getElementById('score-grid').innerText = "Retrying Connection..."; 
-            }
-        }
+<div>Wind<br><span id="wind">--</span> mph</div>
 
-        setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        }, 1000);
+<div>Pressure<br><span id="pressure">--</span></div>
 
-        // Initial Run
-        updateSports();
-        setInterval(updateSports, 60000);
-    </script>
+</div>
+
+</div>
+
+<!-- RADAR -->
+
+<div class="screen" id="radar">
+
+<div class="title">Live Radar</div>
+
+<iframe width="90%" height="80%"
+src="https://embed.windy.com/embed2.html?lat=39.60&lon=-85.44&zoom=7&level=surface&overlay=radar&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates">
+</iframe>
+
+</div>
+
+<!-- SPORTS -->
+
+<div class="screen" id="sports">
+
+<div class="title">College Basketball Tonight</div>
+
+<div id="sportsGames" style="font-size:30px"></div>
+
+</div>
+
+<!-- STOCKS -->
+
+<div class="screen" id="stocks">
+
+<div class="title">Market Watch</div>
+
+<div class="row">
+
+<div>DJIA<br><span id="djia">--</span></div>
+
+<div>S&P 500<br><span id="sp500">--</span></div>
+
+<div>NASDAQ<br><span id="nasdaq">--</span></div>
+
+</div>
+
+</div>
+
+<!-- WEATHER GRAPHS -->
+
+<div class="screen" id="graphs">
+
+<div class="title">Station Trends</div>
+
+<iframe width="90%" height="80%"
+src="https://www.wunderground.com/dashboard/pws/KINRUSHV6">
+</iframe>
+
+</div>
+
+<div class="ticker" id="ticker">
+Loading data...
+</div>
+
+<script>
+
+const apiKey = "c81a6f3f2fe543bd9a6f3f2fe583bde7"
+const stationID = "KINRUSHV6"
+
+async function getWeather(){
+
+let url = `https://api.weather.com/v2/pws/observations/current?stationId=${stationID}&format=json&units=e&apiKey=${apiKey}`
+
+let r = await fetch(url)
+let data = await r.json()
+
+let obs = data.observations[0]
+
+document.getElementById("temp").innerText = Math.round(obs.imperial.temp)+"°"
+
+document.getElementById("humidity").innerText = obs.humidity
+
+document.getElementById("wind").innerText = Math.round(obs.imperial.windSpeed)
+
+document.getElementById("pressure").innerText = obs.imperial.pressure
+
+document.getElementById("ticker").innerText =
+`Temp ${obs.imperial.temp}° | Humidity ${obs.humidity}% | Wind ${obs.imperial.windSpeed} mph`
+
+}
+
+getWeather()
+
+setInterval(getWeather,60000)
+
+</script>
+
+<script>
+
+let screens = document.querySelectorAll(".screen")
+
+let current = 0
+
+function rotateScreens(){
+
+screens.forEach(s=>s.classList.remove("active"))
+
+screens[current].classList.add("active")
+
+current++
+
+if(current>=screens.length){
+current=0
+}
+
+}
+
+setInterval(rotateScreens,3000)
+
+</script>
+
+<script>
+
+setInterval(()=>{
+
+let x=Math.floor(Math.random()*8)-4
+let y=Math.floor(Math.random()*8)-4
+
+document.body.style.transform=`translate(${x}px,${y}px)`
+
+},180000)
+
+</script>
+
 </body>
 </html>
