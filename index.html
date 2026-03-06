@@ -11,11 +11,15 @@ body{margin:0;background:#000;color:white;font-family:Arial;overflow:hidden;}
 .bigtemp{font-size:120px;font-weight:bold;}
 .row{display:flex;gap:60px;margin-top:40px;font-size:30px;}
 .ticker{position:absolute;bottom:0;width:100%;background:#111;padding:10px;font-size:22px;}
+.alert{position:absolute;top:0;width:100%;background:red;color:white;font-size:28px;font-weight:bold;text-align:center;padding:10px;display:none;}
 </style>
 </head>
 <body>
 
-<!-- WEATHER -->
+<!-- FAKE ALERT -->
+<div class="alert" id="alertBanner">⚠️ Severe Thunderstorm Watch in effect until 9:00 PM ⚠️</div>
+
+<!-- WEATHER SCREEN -->
 <div class="screen active" id="weather">
 <div class="title">Rushville Weather</div>
 <div class="bigtemp" id="temp">--°</div>
@@ -26,13 +30,13 @@ body{margin:0;background:#000;color:white;font-family:Arial;overflow:hidden;}
 </div>
 </div>
 
-<!-- SPORTS -->
+<!-- SPORTS SCREEN -->
 <div class="screen" id="sports">
 <div class="title">College Basketball Tonight</div>
 <div id="sportsGames" style="font-size:30px"></div>
 </div>
 
-<!-- STOCKS -->
+<!-- STOCKS SCREEN -->
 <div class="screen" id="stocks">
 <div class="title">Market Watch</div>
 <div class="row">
@@ -45,88 +49,66 @@ body{margin:0;background:#000;color:white;font-family:Arial;overflow:hidden;}
 <div class="ticker" id="ticker">Loading data...</div>
 
 <script>
-// Rotate screens every 3 seconds
-let screens=document.querySelectorAll(".screen");
-let current=0;
-function rotate(){screens.forEach(s=>s.classList.remove("active"));screens[current].classList.add("active");current++;if(current>=screens.length)current=0;}
-setInterval(rotate,3000);
+// --- Rotate screens every 3 seconds ---
+let screens = document.querySelectorAll(".screen");
+let current = 0;
+function rotate() {
+  screens.forEach(s => s.classList.remove("active"));
+  screens[current].classList.add("active");
+  current++;
+  if(current >= screens.length) current = 0;
+}
+setInterval(rotate, 3000);
 
-// --- WEATHER ---
-async function updateWeather(){
+// --- FAKE ALERT (flash every 5 seconds) ---
+const alertBanner = document.getElementById("alertBanner");
+alertBanner.style.display = "block";
+setInterval(() => {
+  alertBanner.style.display = (alertBanner.style.display === "block") ? "none" : "block";
+}, 5000);
+
+// --- Update WEATHER (fake data) ---
+async function updateWeather() {
   const res = await fetch('http://localhost:3000/api/weather');
   const data = await res.json();
   const obs = data.observations[0];
-  document.getElementById("temp").innerText=Math.round(obs.imperial.temp)+"°";
-  document.getElementById("humidity").innerText=obs.humidity;
-  document.getElementById("wind").innerText=Math.round(obs.imperial.windSpeed);
-  document.getElementById("pressure").innerText=obs.imperial.pressure;
-  document.getElementById("ticker").innerText=
-    `Temp ${obs.imperial.temp}° | Wind ${obs.imperial.windSpeed} mph | Humidity ${obs.humidity}% | Pressure ${obs.imperial.pressure}`;
+  document.getElementById("temp").innerText = Math.round(obs.imperial.temp) + "°";
+  document.getElementById("humidity").innerText = obs.humidity;
+  document.getElementById("wind").innerText = Math.round(obs.imperial.windSpeed);
+  document.getElementById("pressure").innerText = obs.imperial.pressure;
+  document.getElementById("ticker").innerText =
+    `⚠️ Severe Thunderstorm Watch ⚠️ | Temp ${obs.imperial.temp}° | Wind ${obs.imperial.windSpeed} mph | Humidity ${obs.humidity}% | Pressure ${obs.imperial.pressure}`;
 }
 updateWeather();
-setInterval(updateWeather,60000);
+setInterval(updateWeather, 5000);
 
-// --- STOCKS ---
-async function updateStocks(){
-  const res=await fetch('http://localhost:3000/api/stocks');
-  const data=await res.json();
-  document.getElementById("djia").innerText=data[0].regularMarketPrice;
-  document.getElementById("sp500").innerText=data[1].regularMarketPrice;
-  document.getElementById("nasdaq").innerText=data[2].regularMarketPrice;
+// --- Update STOCKS (fake data) ---
+async function updateStocks() {
+  const res = await fetch('http://localhost:3000/api/stocks');
+  const data = await res.json();
+  document.getElementById("djia").innerText = data[0].regularMarketPrice;
+  document.getElementById("sp500").innerText = data[1].regularMarketPrice;
+  document.getElementById("nasdaq").innerText = data[2].regularMarketPrice;
 }
 updateStocks();
-setInterval(updateStocks,120000);
+setInterval(updateStocks, 5000);
 
-// --- SPORTS ---
-async function updateSports(){
-  const res=await fetch('http://localhost:3000/api/sports');
-  const data=await res.json();
-  document.getElementById("sportsGames").innerHTML=
-    data.map(g=>`${g.game} – ${g.time} – Score: ${g.score}`).join("<br>");
+// --- Update SPORTS (fake scores) ---
+async function updateSports() {
+  const res = await fetch('http://localhost:3000/api/sports');
+  const data = await res.json();
+  document.getElementById("sportsGames").innerHTML =
+    data.map(g => `${g.game} – ${g.time} – Score: ${g.score}`).join("<br>");
 }
 updateSports();
+setInterval(updateSports, 5000);
 
-// Anti-burn-in pixel drift every 3 minutes
-setInterval(()=>{
-  let x=Math.floor(Math.random()*8)-4;
-  let y=Math.floor(Math.random()*8)-4;
-  document.body.style.transform=`translate(${x}px,${y}px)`;
-},180000);
+// --- Anti-burn-in pixel drift every 3 minutes ---
+setInterval(() => {
+  let x = Math.floor(Math.random() * 8) - 4;
+  let y = Math.floor(Math.random() * 8) - 4;
+  document.body.style.transform = `translate(${x}px,${y}px)`;
+}, 180000);
 </script>
 </body>
 </html>
-✅ How to Run Locally
-
-Open terminal in your project folder.
-
-Install dependencies:
-
-npm install
-
-Start backend:
-
-npm start
-
-You should see:
-
-Backend running at http://localhost:3000
-
-Open index.html in Chrome or Edge.
-
-Weather, stocks, and sports should now appear.
-
-Screens rotate every 3 seconds, ticker updates, and pixel drift prevents burn-in.
-
-I can next step upgrade this dashboard to:
-
-Include radar screen
-
-Weather graphs
-
-Scrolling ticker with multiple data sources
-
-More broadcast-style styling
-
-…and still keep it fully local and live.
-
-Do you want me to do that next?
