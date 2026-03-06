@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rushville Dashboard Prototype</title>
+<title>Rushville Weather Prototype</title>
 <style>
 /* Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
 
-/* Body */
+/* Body & background gradient like sample */
 body {
   margin:0;
   font-family: 'Roboto Condensed', sans-serif;
@@ -45,22 +45,19 @@ body {
   letter-spacing:1px;
 }
 
-/* Screens */
-.screen {
-  position:absolute;
-  width:100%;
-  height:100%;
+/* Main weather container */
+.weather-container {
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:flex-start;
-  opacity:0;
-  transition:opacity 0.5s;
+  height:100vh;
   padding-top:100px;
+  opacity:1;
+  transition:opacity 0.5s;
 }
-.screen.active {opacity:1;}
 
-/* Titles */
+/* Title */
 .title {
   font-size:48px;
   font-weight:bold;
@@ -68,13 +65,15 @@ body {
   letter-spacing:1px;
 }
 
-/* Panel styling */
+/* Panels container */
 .panel-container {
   display:flex;
   gap:30px;
   justify-content:center;
   margin-top:30px;
 }
+
+/* Panel styles */
 .panel {
   background: rgba(255,255,255,0.05);
   border-radius:15px;
@@ -85,19 +84,19 @@ body {
   font-size:24px;
 }
 
-/* Weather-specific */
-.bigtemp {font-size:120px; font-weight:bold; margin-bottom:20px;}
-.weather-icon {width:140px;height:140px;margin-bottom:20px;}
+/* Temperature */
+.bigtemp {
+  font-size:120px;
+  font-weight:bold;
+  margin-bottom:20px;
+}
 
-/* Stocks-specific */
-.stock-card {flex:1;min-width:200px;font-size:28px;}
-
-/* Sports-specific */
-.sports-container {display:flex;flex-direction:column;gap:20px;}
-.game-row {display:flex;justify-content:space-between;align-items:center;background: rgba(255,255,255,0.05);padding:15px 30px;border-radius:12px;font-size:28px;}
-.team {display:flex;align-items:center;gap:10px;}
-.score {font-size:36px;font-weight:bold;}
-.game-time {font-size:24px;}
+/* Weather icon */
+.weather-icon {
+  width:140px;
+  height:140px;
+  margin-bottom:20px;
+}
 
 /* Ticker */
 .ticker {
@@ -115,73 +114,64 @@ body {
 <body>
 
 <div class="watermark">Sample Data Only</div>
-<div class="alert">⚠️ Severe Thunderstorm Watch until 9:00 PM ⚠️</div>
 
-<!-- Weather Screen -->
-<div class="screen active" id="weather">
+<div class="alert" id="alertBanner">⚠️ Severe Thunderstorm Watch until 9:00 PM ⚠️</div>
+
+<div class="weather-container">
   <div class="title">Rushville Weather</div>
-  <img class="weather-icon" src="https://i.imgur.com/3H9gZVl.png" alt="Weather Icon">
-  <div class="bigtemp">72°</div>
+  <img id="weatherIcon" class="weather-icon" src="">
+  <div class="bigtemp" id="temp">--°</div>
   <div class="panel-container">
-    <div class="panel">Humidity<br>55%</div>
-    <div class="panel">Wind<br>12 mph</div>
-    <div class="panel">Pressure<br>29.78</div>
+    <div class="panel">Humidity<br><span id="humidity">--</span>%</div>
+    <div class="panel">Wind<br><span id="wind">--</span> mph</div>
+    <div class="panel">Pressure<br><span id="pressure">--</span></div>
   </div>
 </div>
 
-<!-- Stocks Screen -->
-<div class="screen" id="stocks">
-  <div class="title">Market Watch</div>
-  <div class="panel-container">
-    <div class="panel stock-card"><strong>DJIA</strong><br>38,700</div>
-    <div class="panel stock-card"><strong>S&P 500</strong><br>5,100</div>
-    <div class="panel stock-card"><strong>NASDAQ</strong><br>16,000</div>
-  </div>
-</div>
-
-<!-- Sports Screen -->
-<div class="screen" id="sports">
-  <div class="title">College Basketball Tonight</div>
-  <div class="sports-container">
-    <div class="game-row">
-      <div class="team"><img src="https://i.imgur.com/9V5v2Mx.png" width="50"> Iowa</div>
-      <div class="score">68-62</div>
-      <div class="team">Michigan <img src="https://i.imgur.com/TaNsk3q.png" width="50"></div>
-      <div class="game-time">8:00 PM</div>
-    </div>
-    <div class="game-row">
-      <div class="team"><img src="https://i.imgur.com/U4HqszX.png" width="50"> Michigan State</div>
-      <div class="score">71-65</div>
-      <div class="team">Rutgers <img src="https://i.imgur.com/K8QpHcD.png" width="50"></div>
-      <div class="game-time">8:00 PM</div>
-    </div>
-    <div class="game-row">
-      <div class="team"><img src="https://i.imgur.com/8t2I6aC.png" width="50"> UNC</div>
-      <div class="score">75-70</div>
-      <div class="team">Duke <img src="https://i.imgur.com/1sJr2W9.png" width="50"></div>
-      <div class="game-time">9:00 PM</div>
-    </div>
-  </div>
-</div>
-
-<div class="ticker">⚠️ Severe Thunderstorm Watch ⚠️ | Temp 72° | Wind 12 mph | Humidity 55% | Pressure 29.78 | DJIA 38,700 | S&P 5,100 | NASDAQ 16,000</div>
+<div class="ticker" id="ticker">Loading weather data...</div>
 
 <script>
-// Screen rotation
-const screens = document.querySelectorAll('.screen');
-let current = 0;
-setInterval(() => {
-  screens.forEach(s => s.classList.remove('active'));
-  screens[current].classList.add('active');
-  current = (current + 1) % screens.length;
-}, 3000);
+// --- Weather icons URLs (high-res) ---
+const weatherIcons = {
+  sun:"https://i.imgur.com/1Xo5LzL.png",
+  cloud:"https://i.imgur.com/6P0vT2c.png",
+  storm:"https://i.imgur.com/3H9gZVl.png"
+};
 
-// Pixel drift for anti-burn-in
-setInterval(() => {
-  let x = Math.floor(Math.random()*8)-4;
-  let y = Math.floor(Math.random()*8)-4;
-  document.body.style.transform = `translate(${x}px,${y}px)`;
-}, 180000);
+// --- Generate fake weather data ---
+function getFakeWeather(){
+  const types=["sun","cloud","storm"];
+  const type=types[Math.floor(Math.random()*types.length)];
+  return {
+    temp:Math.floor(Math.random()*20)+60,
+    humidity:Math.floor(Math.random()*50)+30,
+    wind:Math.floor(Math.random()*15)+5,
+    pressure:(Math.random()*2+29).toFixed(2),
+    icon:type
+  };
+}
+
+// --- Update UI ---
+function updateWeather(){
+  const w=getFakeWeather();
+  document.getElementById("temp").innerText=w.temp+"°";
+  document.getElementById("humidity").innerText=w.humidity;
+  document.getElementById("wind").innerText=w.wind;
+  document.getElementById("pressure").innerText=w.pressure;
+  document.getElementById("weatherIcon").src=weatherIcons[w.icon];
+  document.getElementById("ticker").innerText=`⚠️ Severe Thunderstorm Watch ⚠️ | Temp ${w.temp}° | Wind ${w.wind} mph | Humidity ${w.humidity}% | Pressure ${w.pressure}`;
+}
+
+// Initial load and auto-update every 5 seconds
+updateWeather();
+setInterval(updateWeather,5000);
+
+// --- Pixel drift for anti-burn-in ---
+setInterval(()=>{
+  let x=Math.floor(Math.random()*8)-4;
+  let y=Math.floor(Math.random()*8)-4;
+  document.body.style.transform=`translate(${x}px,${y}px)`;
+},180000);
 </script>
 </body>
 </html>
