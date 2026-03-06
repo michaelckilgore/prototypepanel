@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Broadcast Dashboard Prototype</title>
+<title>Rushville Dashboard Prototype</title>
 <style>
-/* Fonts & Body */
+/* Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+
+/* Body */
 body {
   margin:0;
   font-family: 'Roboto Condensed', sans-serif;
-  background: linear-gradient(to bottom, #0a0a0a, #111);
+  background: linear-gradient(to bottom, #0b0b0b, #1a1a1a);
   color:#fff;
   overflow:hidden;
 }
@@ -29,137 +31,157 @@ body {
   letter-spacing:10px;
 }
 
+/* Alert banner */
+.alert {
+  position:absolute;
+  top:0;
+  width:100%;
+  background:#d32f2f;
+  text-align:center;
+  padding:12px;
+  font-size:28px;
+  font-weight:bold;
+  z-index:10;
+  letter-spacing:1px;
+}
+
 /* Screens */
-.screen {position:absolute;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;opacity:0;transition:opacity 0.5s;padding-top:80px;}
+.screen {
+  position:absolute;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  opacity:0;
+  transition:opacity 0.5s;
+  padding-top:100px;
+}
 .screen.active {opacity:1;}
-.title {font-size:42px;font-weight:bold;margin-bottom:30px;letter-spacing:1px;}
 
-/* Panels */
-.panel-container {display:flex;flex-wrap:wrap;gap:30px;justify-content:center;}
-.panel {background: rgba(255,255,255,0.05);border-radius:15px;padding:30px 50px;min-width:220px;text-align:center;box-shadow:0 0 20px rgba(0,0,0,0.5);}
+/* Titles */
+.title {
+  font-size:48px;
+  font-weight:bold;
+  margin-bottom:30px;
+  letter-spacing:1px;
+}
 
-/* Weather */
-.bigtemp {font-size:100px;font-weight:bold;margin-bottom:20px;}
-.weather-icon {width:100px;height:100px;margin-bottom:20px;}
+/* Panel styling */
+.panel-container {
+  display:flex;
+  gap:30px;
+  justify-content:center;
+  margin-top:30px;
+}
+.panel {
+  background: rgba(255,255,255,0.05);
+  border-radius:15px;
+  padding:30px 50px;
+  min-width:220px;
+  text-align:center;
+  box-shadow:0 0 25px rgba(0,0,0,0.5);
+  font-size:24px;
+}
 
-/* Stocks */
+/* Weather-specific */
+.bigtemp {font-size:120px; font-weight:bold; margin-bottom:20px;}
+.weather-icon {width:140px;height:140px;margin-bottom:20px;}
+
+/* Stocks-specific */
 .stock-card {flex:1;min-width:200px;font-size:28px;}
 
-/* Sports */
+/* Sports-specific */
 .sports-container {display:flex;flex-direction:column;gap:20px;}
 .game-row {display:flex;justify-content:space-between;align-items:center;background: rgba(255,255,255,0.05);padding:15px 30px;border-radius:12px;font-size:28px;}
 .team {display:flex;align-items:center;gap:10px;}
 .score {font-size:36px;font-weight:bold;}
-
-/* Alert */
-.alert {position:absolute;top:0;width:100%;background:#d32f2f;text-align:center;padding:12px;font-size:28px;font-weight:bold;z-index:10;}
+.game-time {font-size:24px;}
 
 /* Ticker */
-.ticker {position:absolute;bottom:0;width:100%;background:#111;padding:10px;font-size:22px;white-space:nowrap;}
+.ticker {
+  position:absolute;
+  bottom:0;
+  width:100%;
+  background:#111;
+  padding:12px;
+  font-size:22px;
+  white-space:nowrap;
+  letter-spacing:1px;
+}
 </style>
 </head>
 <body>
 
-<!-- Watermark -->
 <div class="watermark">Sample Data Only</div>
-
-<!-- Alert banner -->
-<div class="alert" id="alertBanner">⚠️ Severe Thunderstorm Watch until 9:00 PM ⚠️</div>
+<div class="alert">⚠️ Severe Thunderstorm Watch until 9:00 PM ⚠️</div>
 
 <!-- Weather Screen -->
 <div class="screen active" id="weather">
   <div class="title">Rushville Weather</div>
-  <img id="weatherIcon" class="weather-icon" src="">
-  <div class="bigtemp" id="temp">--°</div>
+  <img class="weather-icon" src="https://i.imgur.com/3H9gZVl.png" alt="Weather Icon">
+  <div class="bigtemp">72°</div>
   <div class="panel-container">
-    <div class="panel">Humidity<br><span id="humidity">--</span>%</div>
-    <div class="panel">Wind<br><span id="wind">--</span> mph</div>
-    <div class="panel">Pressure<br><span id="pressure">--</span></div>
+    <div class="panel">Humidity<br>55%</div>
+    <div class="panel">Wind<br>12 mph</div>
+    <div class="panel">Pressure<br>29.78</div>
   </div>
 </div>
 
 <!-- Stocks Screen -->
 <div class="screen" id="stocks">
   <div class="title">Market Watch</div>
-  <div class="panel-container" id="stocksRow"></div>
+  <div class="panel-container">
+    <div class="panel stock-card"><strong>DJIA</strong><br>38,700</div>
+    <div class="panel stock-card"><strong>S&P 500</strong><br>5,100</div>
+    <div class="panel stock-card"><strong>NASDAQ</strong><br>16,000</div>
+  </div>
 </div>
 
 <!-- Sports Screen -->
 <div class="screen" id="sports">
   <div class="title">College Basketball Tonight</div>
-  <div class="sports-container" id="sportsGames"></div>
+  <div class="sports-container">
+    <div class="game-row">
+      <div class="team"><img src="https://i.imgur.com/9V5v2Mx.png" width="50"> Iowa</div>
+      <div class="score">68-62</div>
+      <div class="team">Michigan <img src="https://i.imgur.com/TaNsk3q.png" width="50"></div>
+      <div class="game-time">8:00 PM</div>
+    </div>
+    <div class="game-row">
+      <div class="team"><img src="https://i.imgur.com/U4HqszX.png" width="50"> Michigan State</div>
+      <div class="score">71-65</div>
+      <div class="team">Rutgers <img src="https://i.imgur.com/K8QpHcD.png" width="50"></div>
+      <div class="game-time">8:00 PM</div>
+    </div>
+    <div class="game-row">
+      <div class="team"><img src="https://i.imgur.com/8t2I6aC.png" width="50"> UNC</div>
+      <div class="score">75-70</div>
+      <div class="team">Duke <img src="https://i.imgur.com/1sJr2W9.png" width="50"></div>
+      <div class="game-time">9:00 PM</div>
+    </div>
+  </div>
 </div>
 
-<!-- Ticker -->
-<div class="ticker" id="ticker">Loading data...</div>
+<div class="ticker">⚠️ Severe Thunderstorm Watch ⚠️ | Temp 72° | Wind 12 mph | Humidity 55% | Pressure 29.78 | DJIA 38,700 | S&P 5,100 | NASDAQ 16,000</div>
 
 <script>
-// --- Screen rotation ---
-let screens = document.querySelectorAll(".screen");
+// Screen rotation
+const screens = document.querySelectorAll('.screen');
 let current = 0;
-function rotate(){screens.forEach(s=>s.classList.remove("active"));screens[current].classList.add("active");current++;if(current>=screens.length)current=0;}
-setInterval(rotate,3000);
+setInterval(() => {
+  screens.forEach(s => s.classList.remove('active'));
+  screens[current].classList.add('active');
+  current = (current + 1) % screens.length;
+}, 3000);
 
-// --- Fake Weather ---
-const weatherIcons = {
-  "sun":"https://i.imgur.com/1Xo5LzL.png",
-  "cloud":"https://i.imgur.com/6P0vT2c.png",
-  "storm":"https://i.imgur.com/3H9gZVl.png"
-};
-function getFakeWeather(){
-  const types = ["sun","cloud","storm"];
-  const type = types[Math.floor(Math.random()*types.length)];
-  return {temp:Math.floor(Math.random()*20)+60,humidity:Math.floor(Math.random()*50)+30,wind:Math.floor(Math.random()*15)+5,pressure:(Math.random()*2+29).toFixed(2),icon:type};
-}
-function updateWeather(){
-  const w=getFakeWeather();
-  document.getElementById("temp").innerText=w.temp+"°";
-  document.getElementById("humidity").innerText=w.humidity;
-  document.getElementById("wind").innerText=w.wind;
-  document.getElementById("pressure").innerText=w.pressure;
-  document.getElementById("weatherIcon").src=weatherIcons[w.icon];
-  document.getElementById("ticker").innerText=`⚠️ Severe Thunderstorm Watch ⚠️ | Temp ${w.temp}° | Wind ${w.wind} mph | Humidity ${w.humidity}% | Pressure ${w.pressure}`;
-}
-updateWeather();
-setInterval(updateWeather,5000);
-
-// --- Fake Stocks ---
-function getFakeStocks(){return[{name:"DJIA",value:38700+Math.floor(Math.random()*200)},{name:"S&P 500",value:5100+Math.floor(Math.random()*50)},{name:"NASDAQ",value:16000+Math.floor(Math.random()*200)}];}
-function updateStocks(){
-  const stocks=getFakeStocks();
-  const stocksRow=document.getElementById("stocksRow");
-  stocksRow.innerHTML="";
-  stocks.forEach(s=>{const div=document.createElement("div");div.className="panel stock-card";div.innerHTML=`<strong>${s.name}</strong><br>${s.value}`;stocksRow.appendChild(div);});
-}
-updateStocks();
-setInterval(updateStocks,5000);
-
-// --- Fake Sports ---
-const teamLogos = {
-  "Iowa":"https://i.imgur.com/9V5v2Mx.png",
-  "Michigan":"https://i.imgur.com/TaNsk3q.png",
-  "MichiganState":"https://i.imgur.com/U4HqszX.png",
-  "Rutgers":"https://i.imgur.com/K8QpHcD.png",
-  "UNC":"https://i.imgur.com/8t2I6aC.png",
-  "Duke":"https://i.imgur.com/1sJr2W9.png"
-};
-function getFakeSports(){return[
-  {home:"Iowa",homeLogo:teamLogos.Iowa,away:"Michigan",awayLogo:teamLogos.Michigan,time:"8:00 PM",score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
-  {home:"Michigan State",homeLogo:teamLogos.MichiganState,away:"Rutgers",awayLogo:teamLogos.Rutgers,time:"8:00 PM",score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
-  {home:"UNC",homeLogo:teamLogos.UNC,away:"Duke",awayLogo:teamLogos.Duke,time:"9:00 PM",score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`}
-];}
-function updateSports(){
-  const games=getFakeSports();
-  const container=document.getElementById("sportsGames");
-  container.innerHTML="";
-  games.forEach(g=>{const div=document.createElement("div");div.className="game-row";div.innerHTML=`<div class="team"><img src="${g.awayLogo}" width="50"> ${g.away}</div><div class="score">${g.score}</div><div class="team">${g.home} <img src="${g.homeLogo}" width="50"></div><div class="game-time">${g.time}</div>`;container.appendChild(div);});
-}
-updateSports();
-setInterval(updateSports,5000);
-
-// --- Pixel drift ---
-setInterval(()=>{let x=Math.floor(Math.random()*8)-4;let y=Math.floor(Math.random()*8)-4;document.body.style.transform=`translate(${x}px,${y}px)`;},180000);
+// Pixel drift for anti-burn-in
+setInterval(() => {
+  let x = Math.floor(Math.random()*8)-4;
+  let y = Math.floor(Math.random()*8)-4;
+  document.body.style.transform = `translate(${x}px,${y}px)`;
+}, 180000);
 </script>
-
 </body>
 </html>
