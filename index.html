@@ -2,14 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Rushville Command Center - LIVE PROTOTYPE</title>
+    <title>Rushville Command Center - 8:25 PM LIVE</title>
     <style>
-        :root { --panel-bg: rgba(10, 10, 15, 0.98); --accent: #00f2ff; --alert: #ff6600; --border: rgba(0, 242, 255, 0.2); --glass: rgba(255, 255, 255, 0.05); }
+        :root { --panel-bg: rgba(10, 10, 15, 0.98); --accent: #00f2ff; --alert: #ff6600; --border: rgba(0, 242, 255, 0.2); }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: white; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
         
+        /* PERSISTENT FLOOD ALERT */
         #global-alert { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: var(--alert); color: #000; font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: 1.8vw; text-transform: uppercase; z-index: 9999; letter-spacing: 2px; border-bottom: 4px solid #fff; }
 
         .master-container { display: flex; height: calc(100vh - 60px); width: 100vw; margin-top: 60px; }
+
+        /* SIDEBAR - KINRUSHV6 DATA */
         .sidebar { width: 30%; background: var(--panel-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 40px 25px; box-sizing: border-box; }
         #clock { font-size: 6vw; font-weight: 900; letter-spacing: -3px; line-height: 1; }
         #side-temp { font-size: 7.5vw; font-weight: 800; margin-top: 20px; color: var(--accent); }
@@ -17,16 +20,15 @@
         .met-label { font-size: 0.8vw; color: #666; text-transform: uppercase; }
         .met-val { font-size: 1.5vw; font-weight: 600; color: #fff; }
 
+        /* CONTENT */
         .content-area { width: 70%; position: relative; padding: 40px; box-sizing: border-box; }
         .page { display: none; height: 100%; width: 100%; flex-direction: column; justify-content: center; }
         .active { display: flex; }
-
-        .score-card { background: var(--glass); border-left: 10px solid var(--accent); padding: 30px; margin-bottom: 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .team-name { font-size: 2.2vw; font-weight: 700; }
-        .live-score { font-size: 3vw; font-weight: 900; color: var(--accent); }
+        .score-card { background: rgba(255,255,255,0.05); border-left: 10px solid var(--accent); padding: 25px; margin-bottom: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
+        iframe { width: 100%; height: 95%; border-radius: 15px; border: 1px solid var(--border); background: white; }
     </style>
 </head>
-<body>
+<body onclick="unlockAudio()">
 
     <div id="global-alert">RUSH COUNTY: FLOOD WARNING IN EFFECT</div>
 
@@ -45,10 +47,11 @@
         <div class="content-area">
             <div id="page-0" class="page active">
                 <div style="border-left: 15px solid var(--accent); padding-left: 40px;">
-                    <div style="font-size: 6vw; font-weight: 900; line-height:0.8;">WEATHER<br><span style="color:var(--accent)">PROTOTYPE</span></div>
+                    <div style="font-size: 6vw; font-weight: 900; line-height:0.85;">WEATHER<br><span style="color:var(--accent)">COMMAND CENTER</span></div>
                 </div>
             </div>
             <div id="page-1" class="page">
+                <div style="font-size:1.5vw; color:var(--accent); margin-bottom:20px;">LIVE NCAA SCORES (MARCH 5)</div>
                 <div id="sports-list">Syncing NCAA Data...</div>
             </div>
             <div id="page-2" class="page">
@@ -62,12 +65,17 @@
         const WU_ID = 'KINRUSHV6';
         let pageIdx = 0;
 
-        // FETCH WEATHER (DIRECT WU API)
+        // UNLOCK AUDIO ON FIRST CLICK
+        function unlockAudio() { console.log("Audio Unlocked"); }
+
+        // --- 1. WEATHER (KINRUSHV6 TENTHS) ---
         async function updateWeather() {
             try {
+                // Direct fetch with no proxy (often works better on Laptop Chrome)
                 const res = await fetch(`https://api.weather.com{WU_ID}&format=json&units=e&apiKey=${WU_KEY}`);
                 const data = await res.json();
                 const o = data.observations[0].imperial;
+                
                 document.getElementById('side-temp').innerText = o.temp.toFixed(1) + "°";
                 document.getElementById('val-wind').innerText = Math.round(o.windSpeed) + " MPH";
                 document.getElementById('val-hum').innerText = data.observations[0].humidity + "%";
@@ -76,36 +84,41 @@
             } catch(e) { console.error("Weather Fail"); }
         }
 
-        // FETCH SPORTS (CROSS-ORIGIN BYPASS)
+        // --- 2. SPORTS (REDUNDANT PROXY) ---
         async function updateSports() {
+            const proxy = 'https://api.allorigins.win';
+            const target = 'https://site.api.espn.com';
             try {
-                // Using a fallback proxy specifically for Chrome Laptop
-                const res = await fetch('https://api.allorigins.win' + encodeURIComponent('https://site.api.espn.com'));
+                const res = await fetch(proxy + encodeURIComponent(target));
                 const json = await res.json();
                 const data = JSON.parse(json.contents);
                 let html = "";
                 data.events.slice(0, 4).forEach(e => {
-                    const away = e.competitions[0].competitors[1];
-                    const home = e.competitions[0].competitors[0];
-                    html += `<div class="score-card"><div><span class="team-name">${away.team.abbreviation} @ ${home.team.abbreviation}</span><br><small>${e.status.type.detail}</small></div><div class="live-score">${away.score} - ${home.score}</div></div>`;
+                    const teams = e.competitions[0].competitors;
+                    const away = teams.find(t => t.homeAway === 'away');
+                    const home = teams.find(t => t.homeAway === 'home');
+                    html += `<div class="score-card"><div><b>${away.team.abbreviation} @ ${home.team.abbreviation}</b><br><small>${e.status.type.detail}</small></div><div style="font-size:2.5vw; font-weight:900; color:var(--accent)">${away.score} - ${home.score}</div></div>`;
                 });
-                document.getElementById('sports-list').innerHTML = html;
-            } catch(e) { document.getElementById('sports-list').innerHTML = "Check Chrome Security / Network Error"; }
+                document.getElementById('sports-list').innerHTML = html || "No Games Found";
+            } catch(e) { document.getElementById('sports-list').innerHTML = "Syncing Scores..."; }
         }
 
+        // --- 3. ROTATION (8s) ---
         function rotate() {
             document.getElementById(`page-${pageIdx}`).classList.remove('active');
             pageIdx = (pageIdx + 1) % 3;
             document.getElementById(`page-${pageIdx}`).classList.add('active');
         }
-
         setInterval(rotate, 8000);
+
         setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true}).replace(/ AM| PM/, "");
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true}).replace(/ AM| PM/, "");
         }, 1000);
 
         updateWeather(); updateSports();
-        setInterval(updateWeather, 30000); setInterval(updateSports, 45000);
+        setInterval(updateWeather, 20000);
+        setInterval(updateSports, 30000);
     </script>
 </body>
 </html>
