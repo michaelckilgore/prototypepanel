@@ -2,101 +2,117 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Michael's Prototype - Global Alert Edition</title>
+    <title>Michael's Command Center - KINRUSHV6</title>
     <style>
         :root {
-            --panel-bg: rgba(5, 5, 10, 0.98);
+            --panel-bg: rgba(10, 10, 15, 0.98);
             --accent: #00f2ff;
-            --alert: #ff6600; /* Bright Orange for Flood */
+            --alert-orange: #ff6600; 
+            --border: rgba(0, 242, 255, 0.2);
             --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(0, 242, 255, 0.3);
         }
 
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: white; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
         
-        /* GLOBAL ALERT RIBBON */
+        /* PERSISTENT GLOBAL ALERT BAR */
         #global-alert {
-            position: fixed; top: 0; left: 0; width: 100%; height: 50px;
-            background: var(--alert); color: #000; font-weight: 900;
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: var(--alert-orange); color: #000; font-weight: 900;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.5vw; text-transform: uppercase; z-index: 5000;
-            letter-spacing: 2px; display: none; /* Hidden by default, shown by JS */
+            font-size: 1.8vw; text-transform: uppercase; z-index: 9999;
+            letter-spacing: 2px; border-bottom: 4px solid #fff;
         }
 
-        .master-container { display: flex; height: calc(100vh - 50px); width: 100vw; margin-top: 50px; }
-        
-        /* SIDEBAR & CONTENT (Same as before) */
-        .sidebar { width: 28%; background: var(--panel-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 40px 25px; box-sizing: border-box; }
-        #clock { font-size: 5vw; font-weight: 900; letter-spacing: -3px; line-height: 1; margin: 0; }
+        .master-container { display: flex; height: calc(100vh - 60px); width: 100vw; margin-top: 60px; }
+
+        /* SIDEBAR - HIGH DENSITY WITH TENTHS */
+        .sidebar {
+            width: 28%; background: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 40px 25px;
+            box-sizing: border-box; box-shadow: 20px 0 50px rgba(0,0,0,1);
+        }
+
+        #clock { font-size: 5.5vw; font-weight: 900; letter-spacing: -3px; line-height: 1; margin: 0; }
         #date { font-size: 0.9vw; color: var(--accent); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px; }
+        
         .weather-console { border-top: 1px solid var(--border); padding-top: 25px; margin-top: auto; }
-        #side-temp { font-size: 6vw; font-weight: 800; margin: 0; }
-        .met-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .met-val { font-size: 1.2vw; font-weight: 600; color: #eee; }
-        .content-area { width: 72%; position: relative; padding: 60px; box-sizing: border-box; }
+        #side-temp { font-size: 7.5vw; font-weight: 800; margin: 0; line-height: 1; color: #fff; text-shadow: 0 0 20px rgba(0,242,255,0.3); }
+        
+        .met-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+        .met-item { display: flex; flex-direction: column; }
+        .met-label { font-size: 0.75vw; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        .met-val { font-size: 1.4vw; font-weight: 600; color: #eee; }
+
+        /* CONTENT AREA */
+        .content-area { width: 72%; position: relative; padding: 50px; box-sizing: border-box; }
         .page { display: none; height: 100%; width: 100%; flex-direction: column; justify-content: center; }
-        .active { display: flex; animation: fadeIn 0.8s ease; }
-        iframe { width: 100%; height: 95%; border-radius: 15px; border: 1px solid var(--border); background: white; }
+        .active { display: flex; animation: slideIn 0.8s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* SPORTS CARDS */
+        .score-card { 
+            background: var(--glass); border-left: 8px solid var(--accent); 
+            padding: 25px; margin-bottom: 15px; display: flex; 
+            justify-content: space-between; align-items: center; border-radius: 5px;
+        }
+        .team-text { font-size: 2.2vw; font-weight: 700; }
+        .score-text { font-size: 2.8vw; font-weight: 800; color: var(--accent); }
+
+        iframe { width: 100%; height: 95%; border-radius: 20px; border: 1px solid var(--border); background: white; }
     </style>
 </head>
 <body>
 
-    <!-- GLOBAL ALERT (Always on Top) -->
-    <div id="global-alert">FLOOD WARNING IN EFFECT - RUSH COUNTY</div>
+    <!-- PERSISTENT ALERT -->
+    <div id="global-alert">RUSH COUNTY: FLOOD WARNING IN EFFECT</div>
 
     <div class="master-container">
         <div class="sidebar">
             <div id="clock">00:00</div>
-            <div id="date">MARCH 5, 2026</div>
+            <div id="date">LOADING...</div>
+            
             <div class="weather-console">
-                <div id="side-temp">58°</div>
+                <div id="side-temp">--.-°</div>
                 <div style="color:var(--accent); font-size: 1vw; margin-bottom: 15px;">STATION: KINRUSHV6</div>
+                
                 <div class="met-grid">
-                    <div class="met-item"><span style="color:#666; font-size:0.7vw;">Wind</span><br><span id="val-wind" class="met-val">-- MPH</span></div>
-                    <div class="met-item"><span style="color:#666; font-size:0.7vw;">Hum</span><br><span id="val-hum" class="met-val">--%</span></div>
-                    <div class="met-item" style="grid-column: span 2;"><span style="color:#666; font-size:0.7vw;">Barometer</span><br><span id="val-press" class="met-val">-- IN</span></div>
+                    <div class="met-item"><span class="met-label">Wind</span><span id="val-wind" class="met-val">-- MPH</span></div>
+                    <div class="met-item"><span class="met-label">Pressure</span><span id="val-press" class="met-val">-- IN</span></div>
+                    <div class="met-item"><span class="met-label">Humidity</span><span id="val-hum" class="met-val">--%</span></div>
+                    <div class="met-item"><span class="met-label">Dew Point</span><span id="val-dew" class="met-val">--°</span></div>
                 </div>
             </div>
         </div>
 
         <div class="content-area">
+            <!-- PAGE 0: SPLASH -->
             <div id="page-0" class="page active">
                 <div style="border-left: 15px solid var(--accent); padding-left: 40px;">
-                    <div style="font-size: 5vw; font-weight: 900; line-height:0.8;">RUSHVILLE<br><span style="color:var(--accent)">COMMAND CENTER</span></div>
+                    <div style="font-size: 1.5vw; color: #555; letter-spacing: 8px;">MICHAEL'S PROTOTYPE</div>
+                    <div style="font-size: 6vw; font-weight: 900; line-height:0.85;">WEATHER<br><span style="color:var(--accent)">COMMAND CENTER</span></div>
                 </div>
             </div>
-            <div id="page-1" class="page"><div id="sports-list">Syncing NCAA Data...</div></div>
-            <div id="page-2" class="page"><iframe src="https://www.wunderground.com"></iframe></div>
+
+            <!-- PAGE 1: SPORTS (MAR 5) -->
+            <div id="page-1" class="page">
+                <div style="font-size: 1.2vw; color: var(--accent); margin-bottom: 25px; letter-spacing: 3px;">NCAA MEN'S HOOPS</div>
+                <div id="sports-list"></div>
+            </div>
+
+            <!-- PAGE 2: PWS -->
+            <div id="page-2" class="page">
+                <iframe src="https://www.wunderground.com"></iframe>
+            </div>
         </div>
     </div>
 
     <script>
-        const RUSH_ZONE = 'INZ066'; 
+        const WU_KEY = 'c81a6f3f2fe543bd9a6f3f2fe583bde7';
+        const WU_ID = 'KINRUSHV6';
         let pageIdx = 0;
 
-        // --- 1. GLOBAL ALERT FETCHER (NWS) ---
-        async function checkAlerts() {
-            try {
-                const proxy = 'https://api.allorigins.win';
-                const target = 'https://api.weather.gov';
-                const res = await fetch(proxy + encodeURIComponent(target));
-                const json = await res.json();
-                const data = JSON.parse(json.contents);
-                
-                // Search for any warning affecting Rush County Zone (INZ066)
-                const rushAlert = data.features.find(f => f.properties.affectedZones.includes(`https://api.weather.gov{RUSH_ZONE}`));
-                const banner = document.getElementById('global-alert');
-                
-                if (rushAlert) {
-                    banner.innerText = `${rushAlert.properties.event}: RUSH COUNTY`;
-                    banner.style.display = "flex";
-                } else {
-                    banner.style.display = "none";
-                }
-            } catch(e) { console.log("Alert Sync Error"); }
-        }
-
-        // --- 2. ROTATION ---
+        // --- 1. ROTATION (8s) ---
         function rotate() {
             document.getElementById(`page-${pageIdx}`).classList.remove('active');
             pageIdx = (pageIdx + 1) % 3;
@@ -104,13 +120,61 @@
         }
         setInterval(rotate, 8000);
 
-        setInterval(() => {
+        // --- 2. WEATHER (DIRECT PWS FETCH WITH TENTHS) ---
+        async function updateWeather() {
+            try {
+                const res = await fetch(`https://api.weather.com{WU_ID}&format=json&units=e&apiKey=${WU_KEY}`);
+                const data = await res.json();
+                const obs = data.observations[0];
+                
+                // Set Main Temp to Tenths
+                document.getElementById('side-temp').innerText = obs.imperial.temp.toFixed(1) + "°";
+                
+                // Set Sidebar Grid
+                document.getElementById('val-wind').innerText = Math.round(obs.imperial.windSpeed) + " MPH";
+                document.getElementById('val-press').innerText = obs.imperial.pressure.toFixed(2) + " IN";
+                document.getElementById('val-hum').innerText = obs.humidity + "%";
+                document.getElementById('val-dew').innerText = Math.round(obs.imperial.dewpt) + "°";
+            } catch(e) { console.error("Weather Sync Failed"); }
+        }
+
+        // --- 3. SPORTS (8PM TIP-OFFS) ---
+        async function updateSports() {
+            try {
+                const res = await fetch('https://site.api.espn.com');
+                const data = await res.json();
+                let html = "";
+                
+                data.events.slice(0, 4).forEach(e => {
+                    const game = e.competitions[0];
+                    const away = game.competitors.find(c => c.homeAway === 'away');
+                    const home = game.competitors.find(c => c.homeAway === 'home');
+                    
+                    html += `
+                        <div class="score-card">
+                            <div class="team-text">${away.team.abbreviation} @ ${home.team.abbreviation}</div>
+                            <div style="text-align:right">
+                                <div class="score-text">${away.score} - ${home.score}</div>
+                                <div style="font-size:1vw; color:#888;">${e.status.type.shortDetail}</div>
+                            </div>
+                        </div>`;
+                });
+                document.getElementById('sports-list').innerHTML = html || "Checking Schedule...";
+            } catch(e) { document.getElementById('sports-list').innerHTML = "Syncing ESPN..."; }
+        }
+
+        // --- 4. CLOCK ---
+        function updateClock() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true}).replace(/ AM| PM/, "");
-        }, 1000);
+            document.getElementById('date').innerText = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase();
+        }
 
-        checkAlerts();
-        setInterval(checkAlerts, 120000); // Check every 2 mins
+        setInterval(updateClock, 1000);
+        setInterval(updateWeather, 20000);
+        setInterval(updateSports, 30000);
+        
+        updateClock(); updateWeather(); updateSports();
     </script>
 </body>
 </html>
