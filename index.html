@@ -1,217 +1,187 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Media Panel Dashboard</title>
+    <meta charset="UTF-8">
+    <title>Rushville Broadcast Center</title>
+    <style>
+        :root {
+            --panel-bg: rgba(20, 20, 25, 0.85);
+            --accent: #00f2ff;
+            --clutch-y: #ffd700;
+            --clutch-r: #ff2e2e;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
 
-<style>
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #050505; color: white; 
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
 
-body{
-margin:0;
-background:#000;
-color:white;
-font-family:Arial,Helvetica,sans-serif;
-overflow:hidden;
-}
+        /* DYNAMIC BACKGROUND (Verif. Image becomes the backdrop) */
+        #bg-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; filter: brightness(0.3) blur(20px);
+            transition: background 2s ease; background-size: cover;
+        }
 
-.screen{
-position:absolute;
-width:100%;
-height:100%;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-opacity:0;
-transition:opacity 1s;
-}
+        /* BROADCAST LAYOUT */
+        .master-container { display: flex; height: 100vh; width: 100vw; }
 
-.screen.active{
-opacity:1;
-}
+        /* SIDEBAR: CONSTANT DATA */
+        .sidebar {
+            width: 25%; background: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 40px;
+            backdrop-filter: blur(15px); box-sizing: border-box;
+        }
 
-.title{
-position:absolute;
-top:20px;
-font-size:40px;
-font-weight:bold;
-}
+        #clock { font-size: 5vw; font-weight: 800; letter-spacing: -2px; margin-bottom: 0; }
+        #date { font-size: 1.2vw; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 40px; }
+        
+        .sidebar-weather { border-top: 1px solid var(--border); padding-top: 30px; }
+        .sidebar-label { font-size: 0.9vw; color: #888; text-transform: uppercase; margin-bottom: 10px; }
+        #side-temp { font-size: 4vw; font-weight: 700; margin: 0; }
 
-.bigtemp{
-font-size:120px;
-font-weight:bold;
-}
+        /* MAIN CONTENT AREA */
+        .content-area { width: 75%; position: relative; padding: 60px; box-sizing: border-box; }
 
-.row{
-display:flex;
-gap:60px;
-margin-top:40px;
-font-size:30px;
-}
+        .page { 
+            display: none; height: 100%; width: 100%; 
+            flex-direction: column; animation: fadeIn 0.8s ease; 
+        }
+        .active { display: flex; }
 
-.ticker{
-position:absolute;
-bottom:0;
-width:100%;
-background:#111;
-padding:10px;
-font-size:22px;
-}
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-iframe{
-border:none;
-}
+        /* SPORTS CARDS - BROADCAST STYLE */
+        .game-card {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 12px; padding: 25px; margin-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        .team-box { display: flex; align-items: center; gap: 20px; font-size: 2.2vw; font-weight: 700; }
+        .score-box { font-size: 2.5vw; font-weight: 800; color: var(--accent); }
+        .game-status { font-size: 1vw; color: #aaa; text-transform: uppercase; }
 
-</style>
+        /* ALERT BAR */
+        #alert-ticker {
+            position: fixed; bottom: 0; width: 100%; background: #c00;
+            color: white; padding: 12px; font-weight: 700; font-size: 1.2vw;
+            text-transform: uppercase; display: none; z-index: 100;
+        }
+
+        /* CLUTCH OVERRIDES */
+        .clutch-y { border-left: 10px solid var(--clutch-y); background: rgba(255, 215, 0, 0.1); }
+        .clutch-r { border-left: 10px solid var(--clutch-r); background: rgba(255, 46, 46, 0.1); animation: pulseBorder 1s infinite; }
+        @keyframes pulseBorder { 50% { border-left-color: transparent; } }
+
+    </style>
 </head>
-
 <body>
 
-<!-- WEATHER SCREEN -->
-
-<div class="screen active" id="weather">
-
-<div class="title">Rushville Weather</div>
-
-<div class="bigtemp" id="temp">--°</div>
-
-<div class="row">
-
-<div>Humidity<br><span id="humidity">--</span>%</div>
-
-<div>Wind<br><span id="wind">--</span> mph</div>
-
-<div>Pressure<br><span id="pressure">--</span></div>
-
-</div>
-
-</div>
-
-<!-- RADAR -->
-
-<div class="screen" id="radar">
-
-<div class="title">Live Radar</div>
-
-<iframe width="90%" height="80%"
-src="https://embed.windy.com/embed2.html?lat=39.60&lon=-85.44&zoom=7&level=surface&overlay=radar&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates">
-</iframe>
-
-</div>
-
-<!-- SPORTS -->
-
-<div class="screen" id="sports">
-
-<div class="title">College Basketball Tonight</div>
-
-<div id="sportsGames" style="font-size:30px"></div>
-
-</div>
-
-<!-- STOCKS -->
-
-<div class="screen" id="stocks">
-
-<div class="title">Market Watch</div>
-
-<div class="row">
-
-<div>DJIA<br><span id="djia">--</span></div>
-
-<div>S&P 500<br><span id="sp500">--</span></div>
-
-<div>NASDAQ<br><span id="nasdaq">--</span></div>
-
-</div>
-
-</div>
-
-<!-- WEATHER GRAPHS -->
-
-<div class="screen" id="graphs">
-
-<div class="title">Station Trends</div>
-
-<iframe width="90%" height="80%"
-src="https://www.wunderground.com/dashboard/pws/KINRUSHV6">
-</iframe>
-
-</div>
-
-<div class="ticker" id="ticker">
-Loading data...
-</div>
-
-<script>
-
-const apiKey = "c81a6f3f2fe543bd9a6f3f2fe583bde7"
-const stationID = "KINRUSHV6"
-
-async function getWeather(){
-
-let url = `https://api.weather.com/v2/pws/observations/current?stationId=${stationID}&format=json&units=e&apiKey=${apiKey}`
-
-let r = await fetch(url)
-let data = await r.json()
-
-let obs = data.observations[0]
-
-document.getElementById("temp").innerText = Math.round(obs.imperial.temp)+"°"
-
-document.getElementById("humidity").innerText = obs.humidity
-
-document.getElementById("wind").innerText = Math.round(obs.imperial.windSpeed)
-
-document.getElementById("pressure").innerText = obs.imperial.pressure
-
-document.getElementById("ticker").innerText =
-`Temp ${obs.imperial.temp}° | Humidity ${obs.humidity}% | Wind ${obs.imperial.windSpeed} mph`
-
-}
-
-getWeather()
-
-setInterval(getWeather,60000)
-
-</script>
-
-<script>
-
-let screens = document.querySelectorAll(".screen")
-
-let current = 0
-
-function rotateScreens(){
-
-screens.forEach(s=>s.classList.remove("active"))
-
-screens[current].classList.add("active")
-
-current++
-
-if(current>=screens.length){
-current=0
-}
-
-}
-
-setInterval(rotateScreens,3000)
-
-</script>
-
-<script>
-
-setInterval(()=>{
-
-let x=Math.floor(Math.random()*8)-4
-let y=Math.floor(Math.random()*8)-4
-
-document.body.style.transform=`translate(${x}px,${y}px)`
-
-},180000)
-
-</script>
-
+    <div id="bg-layer"></div>
+    <div id="alert-ticker">CRITICAL ALERT: CHECK LOCAL RADAR</div>
+
+    <div class="master-container">
+        <!-- CONSTANT SIDEBAR -->
+        <div class="sidebar">
+            <div id="clock">00:00</div>
+            <div id="date">THURSDAY, MARCH 5</div>
+            
+            <div class="sidebar-weather">
+                <div class="sidebar-label">Backyard Conditions</div>
+                <div id="side-temp">--°</div>
+                <div id="side-wind" style="font-size: 1.2vw; color: #888;">KINRUSHV6 OFFLINE</div>
+            </div>
+        </div>
+
+        <!-- ROTATING CONTENT -->
+        <div class="content-area">
+            
+            <!-- PAGE 1: SPORTS -->
+            <div id="page-0" class="page active">
+                <div class="sidebar-label" style="color: var(--accent); margin-bottom: 20px;">NCAA Scoreboard</div>
+                <div id="sports-list"></div>
+            </div>
+
+            <!-- PAGE 2: WEATHER DASHBOARD -->
+            <div id="page-1" class="page">
+                <iframe src="https://www.wunderground.com" style="width:100%; height:90%; border-radius:15px; border: 1px solid var(--border);"></iframe>
+            </div>
+
+            <!-- PAGE 3: HOUSE MONITOR -->
+            <div id="page-2" class="page">
+                <div class="sidebar-label" style="color: var(--accent); margin-bottom: 20px;">Rushville Monitor</div>
+                <div class="game-card"><div>GRID STATUS</div><div class="score-box" style="color:#0f0">NORMAL</div></div>
+                <div class="game-card"><div>TRASH PICKUP</div><div class="score-box">WEDNESDAY</div></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let pageIdx = 0;
+        const totalPages = 3;
+
+        // --- ROTATION ---
+        function rotate() {
+            document.getElementById(`page-${pageIdx}`).classList.remove('active');
+            pageIdx = (pageIdx + 1) % totalPages;
+            document.getElementById(`page-${pageIdx}`).classList.add('active');
+            
+            // Background update
+            document.getElementById('bg-layer').style.backgroundImage = `url('https://picsum.photos{Math.random()}')`;
+        }
+        setInterval(rotate, 6000); // 6 Seconds for broadcast feel
+
+        // --- SPORTS FETCH (PROXY) ---
+        async function updateSports() {
+            try {
+                const target = 'https://site.api.espn.com';
+                const res = await fetch(`https://api.allorigins.win{encodeURIComponent(target)}`);
+                const json = await res.json();
+                const data = JSON.parse(json.contents);
+                let html = "";
+                
+                data.events.slice(0, 4).forEach(e => {
+                    const teams = e.competitions[0].competitors;
+                    const home = teams.find(t => t.homeAway === 'home');
+                    const away = teams.find(t => t.homeAway === 'away');
+                    const status = e.status.type.shortDetail;
+                    
+                    html += `
+                        <div class="game-card">
+                            <div class="team-box">
+                                <span>${away.team.abbreviation}</span>
+                                <span style="color:#666">@</span>
+                                <span>${home.team.abbreviation}</span>
+                            </div>
+                            <div style="text-align:right">
+                                <div class="score-box">${away.score} - ${home.score}</div>
+                                <div class="game-status">${status}</div>
+                            </div>
+                        </div>`;
+                });
+                document.getElementById('sports-list').innerHTML = html;
+            } catch(e) { console.log("Sports Fail"); }
+        }
+
+        // --- CLOCK ---
+        function clock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true}).replace(" AM","").replace(" PM","");
+            document.getElementById('date').innerText = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase();
+        }
+        
+        setInterval(clock, 1000);
+        setInterval(updateSports, 30000);
+        updateSports(); clock();
+        document.getElementById('bg-layer').style.backgroundImage = `url('https://picsum.photos')`;
+
+    </script>
 </body>
 </html>
