@@ -100,23 +100,12 @@ let current = 0;
 function rotate(){screens.forEach(s=>s.classList.remove("active"));screens[current].classList.add("active");current++;if(current>=screens.length)current=0;}
 setInterval(rotate,3000);
 
-// --- Base64 Logos/Icons ---
-// Example placeholders: you can replace with real team logos/weather icons in Base64
-const weatherIcons = {
-  "sun":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
-  "cloud":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
-  "storm":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA..."
-};
-const teamLogos = {
-  "Iowa":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
-  "Michigan":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
-  "MichiganState":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
-  "Rutgers":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
-  "UNC":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
-  "Duke":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA..."
-};
-
 // --- Fake Weather ---
+const weatherIcons = {
+  "sun":"https://i.imgur.com/1Xo5LzL.png",
+  "cloud":"https://i.imgur.com/6P0vT2c.png",
+  "storm":"https://i.imgur.com/3H9gZVl.png"
+};
 function getFakeWeather(){
   const types = ["sun","cloud","storm"];
   const type = types[Math.floor(Math.random()*types.length)];
@@ -146,6 +135,14 @@ updateStocks();
 setInterval(updateStocks,5000);
 
 // --- Fake Sports ---
+const teamLogos = {
+  "Iowa":"https://i.imgur.com/9V5v2Mx.png",
+  "Michigan":"https://i.imgur.com/TaNsk3q.png",
+  "MichiganState":"https://i.imgur.com/U4HqszX.png",
+  "Rutgers":"https://i.imgur.com/K8QpHcD.png",
+  "UNC":"https://i.imgur.com/8t2I6aC.png",
+  "Duke":"https://i.imgur.com/1sJr2W9.png"
+};
 function getFakeSports(){return[
   {home:"Iowa",homeLogo:teamLogos.Iowa,away:"Michigan",awayLogo:teamLogos.Michigan,time:"8:00 PM",score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
   {home:"Michigan State",homeLogo:teamLogos.MichiganState,away:"Rutgers",awayLogo:teamLogos.Rutgers,time:"8:00 PM",score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
