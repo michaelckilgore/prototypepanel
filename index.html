@@ -11,7 +11,7 @@ body{margin:0;background:#000;color:white;font-family:Arial;overflow:hidden;}
 .bigtemp{font-size:120px;font-weight:bold;}
 .row{display:flex;gap:60px;margin-top:40px;font-size:30px;}
 .ticker{position:absolute;bottom:0;width:100%;background:#111;padding:10px;font-size:22px;}
-.alert{position:absolute;top:0;width:100%;background:red;color:white;font-size:28px;font-weight:bold;text-align:center;padding:10px;display:none;}
+.alert{position:absolute;top:0;width:100%;background:red;color:white;font-size:28px;font-weight:bold;text-align:center;padding:10px;display:block;}
 </style>
 </head>
 <body>
@@ -19,7 +19,7 @@ body{margin:0;background:#000;color:white;font-family:Arial;overflow:hidden;}
 <!-- FAKE ALERT -->
 <div class="alert" id="alertBanner">⚠️ Severe Thunderstorm Watch in effect until 9:00 PM ⚠️</div>
 
-<!-- WEATHER SCREEN -->
+<!-- WEATHER -->
 <div class="screen active" id="weather">
 <div class="title">Rushville Weather</div>
 <div class="bigtemp" id="temp">--°</div>
@@ -30,13 +30,13 @@ body{margin:0;background:#000;color:white;font-family:Arial;overflow:hidden;}
 </div>
 </div>
 
-<!-- SPORTS SCREEN -->
+<!-- SPORTS -->
 <div class="screen" id="sports">
 <div class="title">College Basketball Tonight</div>
 <div id="sportsGames" style="font-size:30px"></div>
 </div>
 
-<!-- STOCKS SCREEN -->
+<!-- STOCKS -->
 <div class="screen" id="stocks">
 <div class="title">Market Watch</div>
 <div class="row">
@@ -60,45 +60,63 @@ function rotate() {
 }
 setInterval(rotate, 3000);
 
-// --- FAKE ALERT (flash every 5 seconds) ---
-const alertBanner = document.getElementById("alertBanner");
-alertBanner.style.display = "block";
-setInterval(() => {
-  alertBanner.style.display = (alertBanner.style.display === "block") ? "none" : "block";
-}, 5000);
+// --- Generate fake weather ---
+function getFakeWeather() {
+  return {
+    temp: Math.floor(Math.random()*20)+60, // 60–79°F
+    humidity: Math.floor(Math.random()*50)+30, // 30–79%
+    wind: Math.floor(Math.random()*15)+5, // 5–19 mph
+    pressure: (Math.random()*2+29).toFixed(2) // 29–31 inHg
+  };
+}
 
-// --- Update WEATHER (fake data) ---
-async function updateWeather() {
-  const res = await fetch('http://localhost:3000/api/weather');
-  const data = await res.json();
-  const obs = data.observations[0];
-  document.getElementById("temp").innerText = Math.round(obs.imperial.temp) + "°";
-  document.getElementById("humidity").innerText = obs.humidity;
-  document.getElementById("wind").innerText = Math.round(obs.imperial.windSpeed);
-  document.getElementById("pressure").innerText = obs.imperial.pressure;
+// --- Generate fake stocks ---
+function getFakeStocks() {
+  return {
+    djia: 38700 + Math.floor(Math.random()*200),
+    sp500: 5100 + Math.floor(Math.random()*50),
+    nasdaq: 16000 + Math.floor(Math.random()*200)
+  };
+}
+
+// --- Generate fake sports scores ---
+function getFakeSports() {
+  const games = [
+    {game:"Michigan @ Iowa", time:"8:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
+    {game:"Rutgers @ Michigan State", time:"8:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
+    {game:"Duke @ UNC", time:"9:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`}
+  ];
+  return games;
+}
+
+// --- Update WEATHER ---
+function updateWeather() {
+  const weather = getFakeWeather();
+  document.getElementById("temp").innerText = weather.temp + "°";
+  document.getElementById("humidity").innerText = weather.humidity;
+  document.getElementById("wind").innerText = weather.wind;
+  document.getElementById("pressure").innerText = weather.pressure;
   document.getElementById("ticker").innerText =
-    `⚠️ Severe Thunderstorm Watch ⚠️ | Temp ${obs.imperial.temp}° | Wind ${obs.imperial.windSpeed} mph | Humidity ${obs.humidity}% | Pressure ${obs.imperial.pressure}`;
+    `⚠️ Severe Thunderstorm Watch ⚠️ | Temp ${weather.temp}° | Wind ${weather.wind} mph | Humidity ${weather.humidity}% | Pressure ${weather.pressure}`;
 }
 updateWeather();
 setInterval(updateWeather, 5000);
 
-// --- Update STOCKS (fake data) ---
-async function updateStocks() {
-  const res = await fetch('http://localhost:3000/api/stocks');
-  const data = await res.json();
-  document.getElementById("djia").innerText = data[0].regularMarketPrice;
-  document.getElementById("sp500").innerText = data[1].regularMarketPrice;
-  document.getElementById("nasdaq").innerText = data[2].regularMarketPrice;
+// --- Update STOCKS ---
+function updateStocks() {
+  const stocks = getFakeStocks();
+  document.getElementById("djia").innerText = stocks.djia;
+  document.getElementById("sp500").innerText = stocks.sp500;
+  document.getElementById("nasdaq").innerText = stocks.nasdaq;
 }
 updateStocks();
 setInterval(updateStocks, 5000);
 
-// --- Update SPORTS (fake scores) ---
-async function updateSports() {
-  const res = await fetch('http://localhost:3000/api/sports');
-  const data = await res.json();
+// --- Update SPORTS ---
+function updateSports() {
+  const sports = getFakeSports();
   document.getElementById("sportsGames").innerHTML =
-    data.map(g => `${g.game} – ${g.time} – Score: ${g.score}`).join("<br>");
+    sports.map(g => `${g.game} – ${g.time} – Score: ${g.score}`).join("<br>");
 }
 updateSports();
 setInterval(updateSports, 5000);
@@ -109,6 +127,7 @@ setInterval(() => {
   let y = Math.floor(Math.random() * 8) - 4;
   document.body.style.transform = `translate(${x}px,${y}px)`;
 }, 180000);
+
 </script>
 </body>
 </html>
