@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>Rushville Broadcast Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
 <style>
 body {
   margin: 0;
   font-family: 'Roboto Condensed', Arial, sans-serif;
-  background: #0c0c0c;
+  background: #0a0a0a;
   color: #fff;
   overflow: hidden;
 }
@@ -32,53 +33,64 @@ body {
 .title {
   position: absolute;
   top: 20px;
-  font-size: 40px;
+  font-size: 42px;
   font-weight: bold;
   letter-spacing: 1px;
 }
 
-/* Big temperature */
+/* Weather screen */
+.weather-panel {
+  display: flex;
+  gap: 50px;
+  margin-top: 80px;
+}
+.panel {
+  background: rgba(255,255,255,0.05);
+  padding: 25px 50px;
+  border-radius: 15px;
+  text-align: center;
+  font-size: 28px;
+}
 .bigtemp {
   font-size: 120px;
   font-weight: bold;
   margin-top: 60px;
 }
-
-/* Info rows */
-.row {
-  display: flex;
-  gap: 60px;
-  margin-top: 40px;
-  font-size: 28px;
-  justify-content: center;
-}
-.panel {
-  background: rgba(255,255,255,0.05);
-  padding: 20px 40px;
-  border-radius: 15px;
-  text-align: center;
+.weather-icon {
+  width: 100px;
+  height: 100px;
 }
 
 /* Stocks screen */
-.stock-panel {
+.stock-row {
+  display: flex;
+  gap: 30px;
+  margin-top: 80px;
+}
+.stock-card {
+  flex: 1;
   background: rgba(0,0,0,0.2);
-  padding: 25px 50px;
-  margin: 10px;
+  padding: 25px;
   border-radius: 15px;
   text-align: center;
   font-size: 28px;
 }
 
 /* Sports screen */
+.sports-container {
+  margin-top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 .game-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 800px;
-  padding: 15px 25px;
-  margin: 10px 0;
   background: rgba(255,255,255,0.05);
+  padding: 15px 30px;
   border-radius: 12px;
+  width: 80%;
 }
 .team {
   display: flex;
@@ -123,30 +135,30 @@ body {
 </head>
 <body>
 
-<!-- Alert -->
-<div class="alert" id="alertBanner">⚠️ Severe Thunderstorm Watch in effect until 9:00 PM ⚠️</div>
+<div class="alert" id="alertBanner">⚠️ Severe Thunderstorm Watch until 9:00 PM ⚠️</div>
 
-<!-- WEATHER SCREEN -->
+<!-- Weather Screen -->
 <div class="screen active" id="weather">
   <div class="title">Rushville Weather</div>
+  <img src="https://via.placeholder.com/100" class="weather-icon" id="weatherIcon">
   <div class="bigtemp" id="temp">--°</div>
-  <div class="row">
+  <div class="weather-panel">
     <div class="panel">Humidity<br><span id="humidity">--</span>%</div>
     <div class="panel">Wind<br><span id="wind">--</span> mph</div>
     <div class="panel">Pressure<br><span id="pressure">--</span></div>
   </div>
 </div>
 
-<!-- SPORTS SCREEN -->
-<div class="screen" id="sports">
-  <div class="title">College Basketball Tonight</div>
-  <div id="sportsGames" style="margin-top:80px;"></div>
-</div>
-
-<!-- STOCKS SCREEN -->
+<!-- Stocks Screen -->
 <div class="screen" id="stocks">
   <div class="title">Market Watch</div>
-  <div class="row" id="stocksRow"></div>
+  <div class="stock-row" id="stocksRow"></div>
+</div>
+
+<!-- Sports Screen -->
+<div class="screen" id="sports">
+  <div class="title">College Basketball Tonight</div>
+  <div class="sports-container" id="sportsGames"></div>
 </div>
 
 <!-- Ticker -->
@@ -166,21 +178,23 @@ setInterval(rotate, 3000);
 
 // --- Fake Weather ---
 function getFakeWeather() {
+  const icons = ["🌤","⛈","🌧","☁️"];
   return {
     temp: Math.floor(Math.random()*20)+60,
     humidity: Math.floor(Math.random()*50)+30,
     wind: Math.floor(Math.random()*15)+5,
-    pressure: (Math.random()*2+29).toFixed(2)
+    pressure: (Math.random()*2+29).toFixed(2),
+    icon: icons[Math.floor(Math.random()*icons.length)]
   };
 }
-
 function updateWeather() {
   const w = getFakeWeather();
   document.getElementById("temp").innerText = w.temp + "°";
   document.getElementById("humidity").innerText = w.humidity;
   document.getElementById("wind").innerText = w.wind;
   document.getElementById("pressure").innerText = w.pressure;
-  document.getElementById("ticker").innerText = 
+  document.getElementById("weatherIcon").src = "https://via.placeholder.com/100?text="+encodeURIComponent(w.icon);
+  document.getElementById("ticker").innerText =
     `⚠️ Severe Thunderstorm Watch ⚠️ | Temp ${w.temp}° | Wind ${w.wind} mph | Humidity ${w.humidity}% | Pressure ${w.pressure}`;
 }
 updateWeather();
@@ -194,14 +208,13 @@ function getFakeStocks() {
     {name:"NASDAQ", value:16000 + Math.floor(Math.random()*200)}
   ];
 }
-
 function updateStocks() {
   const stocks = getFakeStocks();
   const stocksRow = document.getElementById("stocksRow");
   stocksRow.innerHTML = "";
   stocks.forEach(s => {
     const div = document.createElement("div");
-    div.className = "stock-panel";
+    div.className = "stock-card";
     div.innerHTML = `<strong>${s.name}</strong><br>${s.value}`;
     stocksRow.appendChild(div);
   });
@@ -210,7 +223,7 @@ updateStocks();
 setInterval(updateStocks, 5000);
 
 // --- Fake Sports ---
-const logoPlaceholder = "https://via.placeholder.com/50"; // replace with real logos later
+const logoPlaceholder = "https://via.placeholder.com/50";
 function getFakeSports() {
   return [
     {home:"Iowa", homeLogo:logoPlaceholder, away:"Michigan", awayLogo:logoPlaceholder, time:"8:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
@@ -218,7 +231,6 @@ function getFakeSports() {
     {home:"UNC", homeLogo:logoPlaceholder, away:"Duke", awayLogo:logoPlaceholder, time:"9:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`}
   ];
 }
-
 function updateSports() {
   const games = getFakeSports();
   const container = document.getElementById("sportsGames");
@@ -238,12 +250,13 @@ function updateSports() {
 updateSports();
 setInterval(updateSports, 5000);
 
-// --- Anti-burn-in pixel drift every 3 min ---
+// --- Pixel drift anti-burn-in ---
 setInterval(() => {
   let x = Math.floor(Math.random()*8)-4;
   let y = Math.floor(Math.random()*8)-4;
   document.body.style.transform = `translate(${x}px,${y}px)`;
 }, 180000);
 </script>
+
 </body>
 </html>
