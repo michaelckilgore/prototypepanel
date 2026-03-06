@@ -51,7 +51,7 @@ let current=0;
 function rotate(){screens.forEach(s=>s.classList.remove("active"));screens[current].classList.add("active");current++;if(current>=screens.length)current=0;}
 setInterval(rotate,3000);
 
-// Fetch weather
+// --- WEATHER ---
 async function updateWeather(){
   const res = await fetch('http://localhost:3000/api/weather');
   const data = await res.json();
@@ -60,12 +60,13 @@ async function updateWeather(){
   document.getElementById("humidity").innerText=obs.humidity;
   document.getElementById("wind").innerText=Math.round(obs.imperial.windSpeed);
   document.getElementById("pressure").innerText=obs.imperial.pressure;
-  document.getElementById("ticker").innerText=`Temp ${obs.imperial.temp}° | Wind ${obs.imperial.windSpeed} mph | Humidity ${obs.humidity}% | Pressure ${obs.imperial.pressure}`;
+  document.getElementById("ticker").innerText=
+    `Temp ${obs.imperial.temp}° | Wind ${obs.imperial.windSpeed} mph | Humidity ${obs.humidity}% | Pressure ${obs.imperial.pressure}`;
 }
 updateWeather();
 setInterval(updateWeather,60000);
 
-// Fetch stocks
+// --- STOCKS ---
 async function updateStocks(){
   const res=await fetch('http://localhost:3000/api/stocks');
   const data=await res.json();
@@ -76,21 +77,56 @@ async function updateStocks(){
 updateStocks();
 setInterval(updateStocks,120000);
 
-// Fetch sports
+// --- SPORTS ---
 async function updateSports(){
   const res=await fetch('http://localhost:3000/api/sports');
   const data=await res.json();
-  document.getElementById("sportsGames").innerHTML=data.map(g=>g.game+" – "+g.time).join("<br>");
+  document.getElementById("sportsGames").innerHTML=
+    data.map(g=>`${g.game} – ${g.time} – Score: ${g.score}`).join("<br>");
 }
 updateSports();
 
-// Anti-burn-in pixel drift
+// Anti-burn-in pixel drift every 3 minutes
 setInterval(()=>{
   let x=Math.floor(Math.random()*8)-4;
   let y=Math.floor(Math.random()*8)-4;
   document.body.style.transform=`translate(${x}px,${y}px)`;
 },180000);
-
 </script>
 </body>
 </html>
+✅ How to Run Locally
+
+Open terminal in your project folder.
+
+Install dependencies:
+
+npm install
+
+Start backend:
+
+npm start
+
+You should see:
+
+Backend running at http://localhost:3000
+
+Open index.html in Chrome or Edge.
+
+Weather, stocks, and sports should now appear.
+
+Screens rotate every 3 seconds, ticker updates, and pixel drift prevents burn-in.
+
+I can next step upgrade this dashboard to:
+
+Include radar screen
+
+Weather graphs
+
+Scrolling ticker with multiple data sources
+
+More broadcast-style styling
+
+…and still keep it fully local and live.
+
+Do you want me to do that next?
