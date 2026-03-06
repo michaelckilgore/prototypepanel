@@ -3,138 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <title>Broadcast Dashboard Prototype</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* Body and background */
+/* Fonts & Body */
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
 body {
-  margin: 0;
+  margin:0;
   font-family: 'Roboto Condensed', sans-serif;
   background: linear-gradient(to bottom, #0a0a0a, #111);
-  color: #fff;
-  overflow: hidden;
+  color:#fff;
+  overflow:hidden;
 }
 
 /* Watermark */
 .watermark {
   position: fixed;
-  top: 50%;
-  left: 50%;
+  top:50%;
+  left:50%;
   transform: translate(-50%, -50%) rotate(-30deg);
-  font-size: 80px;
-  color: rgba(255, 255, 255, 0.08);
-  pointer-events: none;
-  white-space: nowrap;
-  z-index: 1000;
-  font-weight: bold;
-  letter-spacing: 10px;
+  font-size:80px;
+  color: rgba(255,255,255,0.08);
+  pointer-events:none;
+  white-space:nowrap;
+  z-index:1000;
+  font-weight:bold;
+  letter-spacing:10px;
 }
 
-/* Screen and rotation */
-.screen {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  opacity: 0;
-  transition: opacity 0.5s;
-  padding-top: 80px;
-}
-.screen.active {
-  opacity: 1;
-}
-.title {
-  font-size: 42px;
-  font-weight: bold;
-  margin-bottom: 30px;
-  letter-spacing: 1px;
-}
+/* Screens */
+.screen {position:absolute;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;opacity:0;transition:opacity 0.5s;padding-top:80px;}
+.screen.active {opacity:1;}
+.title {font-size:42px;font-weight:bold;margin-bottom:30px;letter-spacing:1px;}
 
 /* Panels */
-.panel-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  justify-content: center;
-}
-.panel {
-  background: rgba(255,255,255,0.05);
-  border-radius: 15px;
-  padding: 30px 50px;
-  min-width: 220px;
-  text-align: center;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
-}
+.panel-container {display:flex;flex-wrap:wrap;gap:30px;justify-content:center;}
+.panel {background: rgba(255,255,255,0.05);border-radius:15px;padding:30px 50px;min-width:220px;text-align:center;box-shadow:0 0 20px rgba(0,0,0,0.5);}
 
 /* Weather */
-.bigtemp {
-  font-size: 100px;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-.weather-icon {
-  width: 100px;
-  height: 100px;
-  margin-bottom: 20px;
-}
+.bigtemp {font-size:100px;font-weight:bold;margin-bottom:20px;}
+.weather-icon {width:100px;height:100px;margin-bottom:20px;}
 
 /* Stocks */
-.stock-card {
-  flex: 1;
-  min-width: 200px;
-  font-size: 28px;
-}
+.stock-card {flex:1;min-width:200px;font-size:28px;}
 
 /* Sports */
-.sports-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.game-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255,255,255,0.05);
-  padding: 15px 30px;
-  border-radius: 12px;
-  font-size: 28px;
-}
-.team {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.score {
-  font-size: 36px;
-  font-weight: bold;
-}
+.sports-container {display:flex;flex-direction:column;gap:20px;}
+.game-row {display:flex;justify-content:space-between;align-items:center;background: rgba(255,255,255,0.05);padding:15px 30px;border-radius:12px;font-size:28px;}
+.team {display:flex;align-items:center;gap:10px;}
+.score {font-size:36px;font-weight:bold;}
 
 /* Alert */
-.alert {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  background: #d32f2f;
-  text-align: center;
-  padding: 12px;
-  font-size: 28px;
-  font-weight: bold;
-  z-index: 10;
-}
+.alert {position:absolute;top:0;width:100%;background:#d32f2f;text-align:center;padding:12px;font-size:28px;font-weight:bold;z-index:10;}
 
 /* Ticker */
-.ticker {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  background: #111;
-  padding: 10px;
-  font-size: 22px;
-  white-space: nowrap;
-}
+.ticker {position:absolute;bottom:0;width:100%;background:#111;padding:10px;font-size:22px;white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -148,7 +69,7 @@ body {
 <!-- Weather Screen -->
 <div class="screen active" id="weather">
   <div class="title">Rushville Weather</div>
-  <img id="weatherIcon" src="https://via.placeholder.com/100" class="weather-icon">
+  <img id="weatherIcon" class="weather-icon" src="">
   <div class="bigtemp" id="temp">--°</div>
   <div class="panel-container">
     <div class="panel">Humidity<br><span id="humidity">--</span>%</div>
@@ -176,94 +97,71 @@ body {
 // --- Screen rotation ---
 let screens = document.querySelectorAll(".screen");
 let current = 0;
-function rotate() {
-  screens.forEach(s => s.classList.remove("active"));
-  screens[current].classList.add("active");
-  current++;
-  if(current >= screens.length) current = 0;
-}
-setInterval(rotate, 3000);
+function rotate(){screens.forEach(s=>s.classList.remove("active"));screens[current].classList.add("active");current++;if(current>=screens.length)current=0;}
+setInterval(rotate,3000);
+
+// --- Base64 Logos/Icons ---
+// Example placeholders: you can replace with real team logos/weather icons in Base64
+const weatherIcons = {
+  "sun":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
+  "cloud":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
+  "storm":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA..."
+};
+const teamLogos = {
+  "Iowa":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
+  "Michigan":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
+  "MichiganState":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
+  "Rutgers":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
+  "UNC":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA...",
+  "Duke":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAA..."
+};
 
 // --- Fake Weather ---
-function getFakeWeather() {
-  const icons = ["🌤","⛈","🌧","☁️"];
-  return {
-    temp: Math.floor(Math.random()*20)+60,
-    humidity: Math.floor(Math.random()*50)+30,
-    wind: Math.floor(Math.random()*15)+5,
-    pressure: (Math.random()*2+29).toFixed(2),
-    icon: icons[Math.floor(Math.random()*icons.length)]
-  };
+function getFakeWeather(){
+  const types = ["sun","cloud","storm"];
+  const type = types[Math.floor(Math.random()*types.length)];
+  return {temp:Math.floor(Math.random()*20)+60,humidity:Math.floor(Math.random()*50)+30,wind:Math.floor(Math.random()*15)+5,pressure:(Math.random()*2+29).toFixed(2),icon:type};
 }
-function updateWeather() {
-  const w = getFakeWeather();
-  document.getElementById("temp").innerText = w.temp + "°";
-  document.getElementById("humidity").innerText = w.humidity;
-  document.getElementById("wind").innerText = w.wind;
-  document.getElementById("pressure").innerText = w.pressure;
-  document.getElementById("weatherIcon").src = "https://via.placeholder.com/100?text="+encodeURIComponent(w.icon);
-  document.getElementById("ticker").innerText =
-    `⚠️ Severe Thunderstorm Watch ⚠️ | Temp ${w.temp}° | Wind ${w.wind} mph | Humidity ${w.humidity}% | Pressure ${w.pressure}`;
+function updateWeather(){
+  const w=getFakeWeather();
+  document.getElementById("temp").innerText=w.temp+"°";
+  document.getElementById("humidity").innerText=w.humidity;
+  document.getElementById("wind").innerText=w.wind;
+  document.getElementById("pressure").innerText=w.pressure;
+  document.getElementById("weatherIcon").src=weatherIcons[w.icon];
+  document.getElementById("ticker").innerText=`⚠️ Severe Thunderstorm Watch ⚠️ | Temp ${w.temp}° | Wind ${w.wind} mph | Humidity ${w.humidity}% | Pressure ${w.pressure}`;
 }
 updateWeather();
-setInterval(updateWeather, 5000);
+setInterval(updateWeather,5000);
 
 // --- Fake Stocks ---
-function getFakeStocks() {
-  return [
-    {name:"DJIA", value:38700 + Math.floor(Math.random()*200)},
-    {name:"S&P 500", value:5100 + Math.floor(Math.random()*50)},
-    {name:"NASDAQ", value:16000 + Math.floor(Math.random()*200)}
-  ];
-}
-function updateStocks() {
-  const stocks = getFakeStocks();
-  const stocksRow = document.getElementById("stocksRow");
-  stocksRow.innerHTML = "";
-  stocks.forEach(s => {
-    const div = document.createElement("div");
-    div.className = "panel stock-card";
-    div.innerHTML = `<strong>${s.name}</strong><br>${s.value}`;
-    stocksRow.appendChild(div);
-  });
+function getFakeStocks(){return[{name:"DJIA",value:38700+Math.floor(Math.random()*200)},{name:"S&P 500",value:5100+Math.floor(Math.random()*50)},{name:"NASDAQ",value:16000+Math.floor(Math.random()*200)}];}
+function updateStocks(){
+  const stocks=getFakeStocks();
+  const stocksRow=document.getElementById("stocksRow");
+  stocksRow.innerHTML="";
+  stocks.forEach(s=>{const div=document.createElement("div");div.className="panel stock-card";div.innerHTML=`<strong>${s.name}</strong><br>${s.value}`;stocksRow.appendChild(div);});
 }
 updateStocks();
-setInterval(updateStocks, 5000);
+setInterval(updateStocks,5000);
 
 // --- Fake Sports ---
-const logoPlaceholder = "https://via.placeholder.com/50";
-function getFakeSports() {
-  return [
-    {home:"Iowa", homeLogo:logoPlaceholder, away:"Michigan", awayLogo:logoPlaceholder, time:"8:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
-    {home:"Michigan State", homeLogo:logoPlaceholder, away:"Rutgers", awayLogo:logoPlaceholder, time:"8:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
-    {home:"UNC", homeLogo:logoPlaceholder, away:"Duke", awayLogo:logoPlaceholder, time:"9:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`}
-  ];
-}
-function updateSports() {
-  const games = getFakeSports();
-  const container = document.getElementById("sportsGames");
-  container.innerHTML = "";
-  games.forEach(g => {
-    const div = document.createElement("div");
-    div.className = "game-row";
-    div.innerHTML = `
-      <div class="team"><img src="${g.awayLogo}" width="50"> ${g.away}</div>
-      <div class="score">${g.score}</div>
-      <div class="team">${g.home} <img src="${g.homeLogo}" width="50"></div>
-      <div class="game-time">${g.time}</div>
-    `;
-    container.appendChild(div);
-  });
+function getFakeSports(){return[
+  {home:"Iowa",homeLogo:teamLogos.Iowa,away:"Michigan",awayLogo:teamLogos.Michigan,time:"8:00 PM",score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
+  {home:"Michigan State",homeLogo:teamLogos.MichiganState,away:"Rutgers",awayLogo:teamLogos.Rutgers,time:"8:00 PM",score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
+  {home:"UNC",homeLogo:teamLogos.UNC,away:"Duke",awayLogo:teamLogos.Duke,time:"9:00 PM",score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`}
+];}
+function updateSports(){
+  const games=getFakeSports();
+  const container=document.getElementById("sportsGames");
+  container.innerHTML="";
+  games.forEach(g=>{const div=document.createElement("div");div.className="game-row";div.innerHTML=`<div class="team"><img src="${g.awayLogo}" width="50"> ${g.away}</div><div class="score">${g.score}</div><div class="team">${g.home} <img src="${g.homeLogo}" width="50"></div><div class="game-time">${g.time}</div>`;container.appendChild(div);});
 }
 updateSports();
-setInterval(updateSports, 5000);
+setInterval(updateSports,5000);
 
-// --- Pixel drift anti-burn-in ---
-setInterval(() => {
-  let x = Math.floor(Math.random()*8)-4;
-  let y = Math.floor(Math.random()*8)-4;
-  document.body.style.transform = `translate(${x}px,${y}px)`;
-}, 180000);
+// --- Pixel drift ---
+setInterval(()=>{let x=Math.floor(Math.random()*8)-4;let y=Math.floor(Math.random()*8)-4;document.body.style.transform=`translate(${x}px,${y}px)`;},180000);
 </script>
 
 </body>
