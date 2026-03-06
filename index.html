@@ -2,54 +2,158 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Rushville Dashboard</title>
+<title>Rushville Broadcast Dashboard</title>
 <style>
-body{margin:0;background:#000;color:white;font-family:Arial;overflow:hidden;}
-.screen{position:absolute;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 1s;}
-.screen.active{opacity:1;}
-.title{position:absolute;top:20px;font-size:40px;font-weight:bold;}
-.bigtemp{font-size:120px;font-weight:bold;}
-.row{display:flex;gap:60px;margin-top:40px;font-size:30px;}
-.ticker{position:absolute;bottom:0;width:100%;background:#111;padding:10px;font-size:22px;}
-.alert{position:absolute;top:0;width:100%;background:red;color:white;font-size:28px;font-weight:bold;text-align:center;padding:10px;display:block;}
+body {
+  margin: 0;
+  font-family: 'Roboto Condensed', Arial, sans-serif;
+  background: #0c0c0c;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* Screens */
+.screen {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.screen.active {
+  opacity: 1;
+}
+
+/* Title */
+.title {
+  position: absolute;
+  top: 20px;
+  font-size: 40px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Big temperature */
+.bigtemp {
+  font-size: 120px;
+  font-weight: bold;
+  margin-top: 60px;
+}
+
+/* Info rows */
+.row {
+  display: flex;
+  gap: 60px;
+  margin-top: 40px;
+  font-size: 28px;
+  justify-content: center;
+}
+.panel {
+  background: rgba(255,255,255,0.05);
+  padding: 20px 40px;
+  border-radius: 15px;
+  text-align: center;
+}
+
+/* Stocks screen */
+.stock-panel {
+  background: rgba(0,0,0,0.2);
+  padding: 25px 50px;
+  margin: 10px;
+  border-radius: 15px;
+  text-align: center;
+  font-size: 28px;
+}
+
+/* Sports screen */
+.game-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 800px;
+  padding: 15px 25px;
+  margin: 10px 0;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+}
+.team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 28px;
+}
+.score {
+  font-size: 36px;
+  font-weight: bold;
+}
+.game-time {
+  font-size: 22px;
+  color: #ccc;
+}
+
+/* Alert banner */
+.alert {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  background: #d32f2f;
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  padding: 12px;
+  z-index: 10;
+}
+
+/* Ticker */
+.ticker {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #111;
+  padding: 10px;
+  font-size: 22px;
+  white-space: nowrap;
+}
 </style>
 </head>
 <body>
 
-<!-- FAKE ALERT -->
+<!-- Alert -->
 <div class="alert" id="alertBanner">⚠️ Severe Thunderstorm Watch in effect until 9:00 PM ⚠️</div>
 
-<!-- WEATHER -->
+<!-- WEATHER SCREEN -->
 <div class="screen active" id="weather">
-<div class="title">Rushville Weather</div>
-<div class="bigtemp" id="temp">--°</div>
-<div class="row">
-<div>Humidity<br><span id="humidity">--</span>%</div>
-<div>Wind<br><span id="wind">--</span> mph</div>
-<div>Pressure<br><span id="pressure">--</span></div>
-</div>
+  <div class="title">Rushville Weather</div>
+  <div class="bigtemp" id="temp">--°</div>
+  <div class="row">
+    <div class="panel">Humidity<br><span id="humidity">--</span>%</div>
+    <div class="panel">Wind<br><span id="wind">--</span> mph</div>
+    <div class="panel">Pressure<br><span id="pressure">--</span></div>
+  </div>
 </div>
 
-<!-- SPORTS -->
+<!-- SPORTS SCREEN -->
 <div class="screen" id="sports">
-<div class="title">College Basketball Tonight</div>
-<div id="sportsGames" style="font-size:30px"></div>
+  <div class="title">College Basketball Tonight</div>
+  <div id="sportsGames" style="margin-top:80px;"></div>
 </div>
 
-<!-- STOCKS -->
+<!-- STOCKS SCREEN -->
 <div class="screen" id="stocks">
-<div class="title">Market Watch</div>
-<div class="row">
-<div>DJIA<br><span id="djia">--</span></div>
-<div>S&P 500<br><span id="sp500">--</span></div>
-<div>NASDAQ<br><span id="nasdaq">--</span></div>
-</div>
+  <div class="title">Market Watch</div>
+  <div class="row" id="stocksRow"></div>
 </div>
 
+<!-- Ticker -->
 <div class="ticker" id="ticker">Loading data...</div>
 
 <script>
-// --- Rotate screens every 3 seconds ---
+// --- Screen rotation ---
 let screens = document.querySelectorAll(".screen");
 let current = 0;
 function rotate() {
@@ -60,74 +164,86 @@ function rotate() {
 }
 setInterval(rotate, 3000);
 
-// --- Generate fake weather ---
+// --- Fake Weather ---
 function getFakeWeather() {
   return {
-    temp: Math.floor(Math.random()*20)+60, // 60–79°F
-    humidity: Math.floor(Math.random()*50)+30, // 30–79%
-    wind: Math.floor(Math.random()*15)+5, // 5–19 mph
-    pressure: (Math.random()*2+29).toFixed(2) // 29–31 inHg
+    temp: Math.floor(Math.random()*20)+60,
+    humidity: Math.floor(Math.random()*50)+30,
+    wind: Math.floor(Math.random()*15)+5,
+    pressure: (Math.random()*2+29).toFixed(2)
   };
 }
 
-// --- Generate fake stocks ---
-function getFakeStocks() {
-  return {
-    djia: 38700 + Math.floor(Math.random()*200),
-    sp500: 5100 + Math.floor(Math.random()*50),
-    nasdaq: 16000 + Math.floor(Math.random()*200)
-  };
-}
-
-// --- Generate fake sports scores ---
-function getFakeSports() {
-  const games = [
-    {game:"Michigan @ Iowa", time:"8:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
-    {game:"Rutgers @ Michigan State", time:"8:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
-    {game:"Duke @ UNC", time:"9:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`}
-  ];
-  return games;
-}
-
-// --- Update WEATHER ---
 function updateWeather() {
-  const weather = getFakeWeather();
-  document.getElementById("temp").innerText = weather.temp + "°";
-  document.getElementById("humidity").innerText = weather.humidity;
-  document.getElementById("wind").innerText = weather.wind;
-  document.getElementById("pressure").innerText = weather.pressure;
-  document.getElementById("ticker").innerText =
-    `⚠️ Severe Thunderstorm Watch ⚠️ | Temp ${weather.temp}° | Wind ${weather.wind} mph | Humidity ${weather.humidity}% | Pressure ${weather.pressure}`;
+  const w = getFakeWeather();
+  document.getElementById("temp").innerText = w.temp + "°";
+  document.getElementById("humidity").innerText = w.humidity;
+  document.getElementById("wind").innerText = w.wind;
+  document.getElementById("pressure").innerText = w.pressure;
+  document.getElementById("ticker").innerText = 
+    `⚠️ Severe Thunderstorm Watch ⚠️ | Temp ${w.temp}° | Wind ${w.wind} mph | Humidity ${w.humidity}% | Pressure ${w.pressure}`;
 }
 updateWeather();
 setInterval(updateWeather, 5000);
 
-// --- Update STOCKS ---
+// --- Fake Stocks ---
+function getFakeStocks() {
+  return [
+    {name:"DJIA", value:38700 + Math.floor(Math.random()*200)},
+    {name:"S&P 500", value:5100 + Math.floor(Math.random()*50)},
+    {name:"NASDAQ", value:16000 + Math.floor(Math.random()*200)}
+  ];
+}
+
 function updateStocks() {
   const stocks = getFakeStocks();
-  document.getElementById("djia").innerText = stocks.djia;
-  document.getElementById("sp500").innerText = stocks.sp500;
-  document.getElementById("nasdaq").innerText = stocks.nasdaq;
+  const stocksRow = document.getElementById("stocksRow");
+  stocksRow.innerHTML = "";
+  stocks.forEach(s => {
+    const div = document.createElement("div");
+    div.className = "stock-panel";
+    div.innerHTML = `<strong>${s.name}</strong><br>${s.value}`;
+    stocksRow.appendChild(div);
+  });
 }
 updateStocks();
 setInterval(updateStocks, 5000);
 
-// --- Update SPORTS ---
+// --- Fake Sports ---
+const logoPlaceholder = "https://via.placeholder.com/50"; // replace with real logos later
+function getFakeSports() {
+  return [
+    {home:"Iowa", homeLogo:logoPlaceholder, away:"Michigan", awayLogo:logoPlaceholder, time:"8:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
+    {home:"Michigan State", homeLogo:logoPlaceholder, away:"Rutgers", awayLogo:logoPlaceholder, time:"8:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`},
+    {home:"UNC", homeLogo:logoPlaceholder, away:"Duke", awayLogo:logoPlaceholder, time:"9:00 PM", score:`${Math.floor(Math.random()*30)+50}-${Math.floor(Math.random()*30)+50}`}
+  ];
+}
+
 function updateSports() {
-  const sports = getFakeSports();
-  document.getElementById("sportsGames").innerHTML =
-    sports.map(g => `${g.game} – ${g.time} – Score: ${g.score}`).join("<br>");
+  const games = getFakeSports();
+  const container = document.getElementById("sportsGames");
+  container.innerHTML = "";
+  games.forEach(g => {
+    const div = document.createElement("div");
+    div.className = "game-row";
+    div.innerHTML = `
+      <div class="team"><img src="${g.awayLogo}" width="50"> ${g.away}</div>
+      <div class="score">${g.score}</div>
+      <div class="team">${g.home} <img src="${g.homeLogo}" width="50"></div>
+      <div class="game-time">${g.time}</div>
+    `;
+    container.appendChild(div);
+  });
 }
 updateSports();
 setInterval(updateSports, 5000);
 
-// --- Anti-burn-in pixel drift every 3 minutes ---
+// --- Anti-burn-in pixel drift every 3 min ---
 setInterval(() => {
-  let x = Math.floor(Math.random() * 8) - 4;
-  let y = Math.floor(Math.random() * 8) - 4;
+  let x = Math.floor(Math.random()*8)-4;
+  let y = Math.floor(Math.random()*8)-4;
   document.body.style.transform = `translate(${x}px,${y}px)`;
 }, 180000);
-
 </script>
 </body>
 </html>
